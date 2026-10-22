@@ -1,0 +1,14 @@
+{
+ "query": {
+  "pages": [
+   {
+    "title": "Aye-aye",
+    "thumbnail": {
+     "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Wild_aye_aye.jpg/500px-Wild_aye_aye.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+     "width": 500,
+     "height": 333
+    }
+   }
+  ]
+ }
+}

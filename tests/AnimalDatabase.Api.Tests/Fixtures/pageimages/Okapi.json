@@ -1,0 +1,14 @@
+{
+ "query": {
+  "pages": [
+   {
+    "title": "Okapi",
+    "thumbnail": {
+     "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Saint-Aignan_%28Loir-et-Cher%29._Okapi.jpg/500px-Saint-Aignan_%28Loir-et-Cher%29._Okapi.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+     "width": 500,
+     "height": 334
+    }
+   }
+  ]
+ }
+}

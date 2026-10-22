@@ -1,0 +1,288 @@
+{
+ "head": {
+  "vars": [
+   "rank",
+   "name"
+  ]
+ },
+ "results": {
+  "bindings": [
+   {
+    "name": {
+     "type": "literal",
+     "value": "Animalia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q36732"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Protostomia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3150876"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Bilateria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2752679"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eumetazoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2752679"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eukaryota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q146481"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eukaryota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q19858692"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Mollusca"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q38348"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Octopoda"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q36602"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cephalopoda"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q37517"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Opisthokonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Lophotrochozoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2111790"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Octopodiformes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5868144"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Amorphea"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Conchifera"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q1153785"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Coleoidea"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867051"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Unikonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3491996"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Filozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Holozoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q19858692"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Choanozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Spiralia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2111790"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Biota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q22666877"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Nephrozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eumollusca"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q1153785"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cytota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q22666877"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Neocoleoidea"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2981883"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Parahoxozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Obazoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Orthokaryotes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Neokaryotes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Podiata"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Myriazoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Vampyropoda"
+    }
+   }
+  ]
+ }
+}

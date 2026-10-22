@@ -1,0 +1,14 @@
+{
+ "query": {
+  "pages": [
+   {
+    "title": "Psychrolutes marcidus",
+    "thumbnail": {
+     "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Psychrolutes_marcidus.jpg/500px-Psychrolutes_marcidus.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+     "width": 500,
+     "height": 198
+    }
+   }
+  ]
+ }
+}

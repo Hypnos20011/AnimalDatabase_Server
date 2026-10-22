@@ -1,0 +1,35 @@
+{
+ "entities": {
+  "Q82288": {
+   "id": "Q82288",
+   "claims": {
+    "P225": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": "Psychrolutes marcidus",
+        "type": "string"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 14594740,
+           "id": "Q14594740"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ }
+}

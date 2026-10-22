@@ -1,0 +1,21 @@
+{
+ "entities": {
+  "Q40152": {
+   "id": "Q40152",
+   "claims": {
+    "P225": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": "Octopoda",
+        "type": "string"
+       }
+      }
+     }
+    ]
+   }
+  }
+ }
+}

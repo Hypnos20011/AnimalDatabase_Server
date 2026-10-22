@@ -1,0 +1,680 @@
+{
+ "head": {
+  "vars": [
+   "rank",
+   "name"
+  ]
+ },
+ "results": {
+  "bindings": [
+   {
+    "name": {
+     "type": "literal",
+     "value": "Animalia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q36732"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Bilateria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2752679"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eumetazoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2752679"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Mammalia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q37517"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Primates"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q36602"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Chordata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q38348"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eukaryota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q146481"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eukaryota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q19858692"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Tetrapoda"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3504061"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Vertebrata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q1153785"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Placentalia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2007442"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Gnathostomata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2361851"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Osteichthyes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q60922428"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Strepsirrhini"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867959"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Opisthokonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Theria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867051"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Theria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054425"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cynodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Boreoeutheria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054237"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Theriodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Teleostomi"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Reptiliomorpha"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Primatomorpha"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q7506274"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Rhipidistia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Elpistostegalia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2007442"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Deuterostomia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2111790"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Deuterostomia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3150876"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Sarcopterygii"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3504061"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Amniota"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Daubentonia madagascariensis"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q7432"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Synapsida"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Therapsida"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Euarchontoglires"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5868144"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Amorphea"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eucynodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Euarchonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6462265"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cladotheria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q7504331"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Sphenacodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Tribosphenida"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054535"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Probainognathia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Unikonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3491996"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Filozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Holozoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q19858692"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Choanozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Tetrapodomorpha"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867051"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eupelycosauria"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Euteleostomi"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Mammaliaformes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Trechnotheria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054795"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Biota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q22666877"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Holotheria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2007442"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Zatheria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054637"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Theriiformes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867051"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Daubentonia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q34740"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Boreosphenida"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054535"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Nephrozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eugnathostomata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Chiromyiformes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2889003"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Olfactores"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cytota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q22666877"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eotetrapodiformes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Epicynodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eutheriodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Prozostrodontia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Sphenacodontoidea"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Stegocephalia"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Daubentoniidae"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q35409"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Parahoxozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eutheria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Obazoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Dipnotetrapodomorpha"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Theriimorpha"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Mammaliamorpha"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Prototribosphenida"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Orthokaryotes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Neokaryotes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Podiata"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Myriazoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Pantherapsida"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Sphenacomorpha"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Haptodontiformes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Metopophora"
+    }
+   }
+  ]
+ }
+}

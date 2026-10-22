@@ -1,0 +1,111 @@
+{
+ "entities": {
+  "Q82037": {
+   "id": "Q82037",
+   "claims": {
+    "P225": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": "Okapia johnstoni",
+        "type": "string"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 14594740,
+           "id": "Q14594740"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "P141": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 96377276,
+         "id": "Q96377276"
+        },
+        "type": "wikibase-entityid"
+       }
+      }
+     }
+    ],
+    "P2067": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "amount": "+22",
+         "unit": "http://www.wikidata.org/entity/Q11570",
+         "upperBound": "+30",
+         "lowerBound": "+14"
+        },
+        "type": "quantity"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 4128476,
+           "id": "Q4128476"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "amount": "+250",
+         "unit": "http://www.wikidata.org/entity/Q11570",
+         "upperBound": "+300",
+         "lowerBound": "+200"
+        },
+        "type": "quantity"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 78101716,
+           "id": "Q78101716"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ }
+}

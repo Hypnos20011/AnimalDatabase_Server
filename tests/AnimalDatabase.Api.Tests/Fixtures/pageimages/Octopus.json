@@ -1,0 +1,14 @@
+{
+ "query": {
+  "pages": [
+   {
+    "title": "Octopus",
+    "thumbnail": {
+     "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Octopus2.jpg/500px-Octopus2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+     "width": 500,
+     "height": 381
+    }
+   }
+  ]
+ }
+}

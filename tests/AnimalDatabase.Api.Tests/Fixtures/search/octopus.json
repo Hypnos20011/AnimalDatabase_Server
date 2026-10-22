@@ -1,0 +1,42 @@
+{
+ "batchcomplete": true,
+ "query": {
+  "pages": [
+   {
+    "title": "Octopus",
+    "index": 1
+   },
+   {
+    "title": "Blue-ringed octopus",
+    "index": 5
+   },
+   {
+    "title": "Doctor Octopus",
+    "index": 2
+   },
+   {
+    "title": "Octopus (disambiguation)",
+    "index": 3,
+    "pageprops": {
+     "disambiguation": ""
+    }
+   },
+   {
+    "title": "Mimic octopus",
+    "index": 8
+   },
+   {
+    "title": "Giant Pacific octopus",
+    "index": 4
+   },
+   {
+    "title": "Kraken",
+    "index": 7
+   },
+   {
+    "title": "Octopus Energy",
+    "index": 6
+   }
+  ]
+ }
+}

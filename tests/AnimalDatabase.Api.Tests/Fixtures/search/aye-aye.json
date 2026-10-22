@@ -1,0 +1,45 @@
+{
+ "batchcomplete": true,
+ "query": {
+  "pages": [
+   {
+    "title": "Aye-aye",
+    "index": 1
+   },
+   {
+    "title": "Lemur",
+    "index": 8
+   },
+   {
+    "title": "Giant aye-aye",
+    "index": 2
+   },
+   {
+    "title": "Hawaiian Aye Aye",
+    "index": 7
+   },
+   {
+    "title": "Yes and no",
+    "index": 6
+   },
+   {
+    "title": "Aye",
+    "index": 3,
+    "pageprops": {
+     "disambiguation": ""
+    }
+   },
+   {
+    "title": "Aye Aye Aung",
+    "index": 5,
+    "pageprops": {
+     "disambiguation": ""
+    }
+   },
+   {
+    "title": "Aye Ishq e Junoon",
+    "index": 4
+   }
+  ]
+ }
+}

@@ -203,7 +203,7 @@ public class WikipediaImporter
         result.TaxonomicClass = ClassifyTaxa(ancestors.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase));
     }
 
-    private static string? ClassifyTaxa(HashSet<string> taxa)
+    internal static string? ClassifyTaxa(HashSet<string> taxa)
     {
         foreach (var (cls, names) in ClassRules)
         {

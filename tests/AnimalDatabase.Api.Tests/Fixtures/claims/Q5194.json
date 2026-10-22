@@ -1,0 +1,36 @@
+{
+ "entities": {
+  "Q5194": {
+   "id": "Q5194",
+   "claims": {
+    "P225": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": "Tardigrada",
+        "type": "string"
+       }
+      }
+     }
+    ],
+    "P2043": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "amount": "+0.5",
+         "unit": "http://www.wikidata.org/entity/Q174789"
+        },
+        "type": "quantity"
+       }
+      }
+     }
+    ]
+   }
+  }
+ }
+}

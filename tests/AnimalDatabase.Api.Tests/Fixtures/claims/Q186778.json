@@ -1,0 +1,109 @@
+{
+ "entities": {
+  "Q186778": {
+   "id": "Q186778",
+   "claims": {
+    "P225": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": "Daubentonia madagascariensis",
+        "type": "string"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 14594740,
+           "id": "Q14594740"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "P141": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 96377276,
+         "id": "Q96377276"
+        },
+        "type": "wikibase-entityid"
+       }
+      }
+     }
+    ],
+    "P2067": [
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "amount": "+115",
+         "unit": "http://www.wikidata.org/entity/Q41803",
+         "upperBound": "+140",
+         "lowerBound": "+90"
+        },
+        "type": "quantity"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 4128476,
+           "id": "Q4128476"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "rank": "normal",
+      "mainsnak": {
+       "snaktype": "value",
+       "datavalue": {
+        "value": {
+         "amount": "+2.5",
+         "unit": "http://www.wikidata.org/entity/Q11570"
+        },
+        "type": "quantity"
+       }
+      },
+      "qualifiers": {
+       "P3831": [
+        {
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 78101716,
+           "id": "Q78101716"
+          },
+          "type": "wikibase-entityid"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  }
+ }
+}

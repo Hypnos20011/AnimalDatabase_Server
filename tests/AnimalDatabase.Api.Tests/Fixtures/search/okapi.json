@@ -1,0 +1,42 @@
+{
+ "batchcomplete": true,
+ "query": {
+  "pages": [
+   {
+    "title": "Okapi",
+    "index": 1
+   },
+   {
+    "title": "Okapi Wildlife Reserve",
+    "index": 7
+   },
+   {
+    "title": "Ossicone",
+    "index": 8
+   },
+   {
+    "title": "Okapi BM25",
+    "index": 2
+   },
+   {
+    "title": "Okapi (knife)",
+    "index": 5
+   },
+   {
+    "title": "Radio Okapi",
+    "index": 4
+   },
+   {
+    "title": "Okapi (disambiguation)",
+    "index": 3,
+    "pageprops": {
+     "disambiguation": ""
+    }
+   },
+   {
+    "title": "Okapi Aalst",
+    "index": 6
+   }
+  ]
+ }
+}

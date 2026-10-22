@@ -1,0 +1,490 @@
+{
+ "head": {
+  "vars": [
+   "rank",
+   "name"
+  ]
+ },
+ "results": {
+  "bindings": [
+   {
+    "name": {
+     "type": "literal",
+     "value": "Animalia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q36732"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Bilateria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2752679"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eumetazoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2752679"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Chordata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q38348"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eukaryota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q146481"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eukaryota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q19858692"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Vertebrata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q1153785"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Gnathostomata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2361851"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Osteichthyes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q60922428"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Psychrolutes marcidus"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q7432"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Actinopterygii"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3504061"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Perciformes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q36602"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Opisthokonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Deuterostomia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2111790"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Deuterostomia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3150876"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Teleostei"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q37517"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Teleostei"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2007442"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Teleostei"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q30093070"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Actinopteri"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q37517"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Actinopteri"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3504061"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Amorphea"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Acanthopterygii"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q30093070"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Neopterygii"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867051"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cottoidei"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q5867959"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Unikonta"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q3491996"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Clupeocephala"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6054425"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Filozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cottoidea"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2136103"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Ctenosquamata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q10861426"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Holozoa"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q19858692"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Choanozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Psychrolutidae"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q35409"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Euteleostei"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q2981883"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Neoteleostei"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q6541077"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Biota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q22666877"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Psychrolutes"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q34740"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Nephrozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eugnathostomata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q713623"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Olfactores"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Cytota"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q22666877"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Parahoxozoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Obazoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Osteoglossocephalai"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q60445775"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Percomorphaceae"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q30093105"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Teleosteomorpha"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eupercaria"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q21061732"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Acanthomorphata"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q10861375"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Orthokaryotes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Neokaryotes"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Podiata"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Eurypterygia"
+    },
+    "rank": {
+     "type": "uri",
+     "value": "http://www.wikidata.org/entity/Q4226087"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Myriazoa"
+    }
+   },
+   {
+    "name": {
+     "type": "literal",
+     "value": "Pan-Euteleostei"
+    }
+   }
+  ]
+ }
+}

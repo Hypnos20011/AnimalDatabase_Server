@@ -182,8 +182,8 @@ public class WikipediaImporter
         var lengths = GetQuantities(claims.Value, "P2043", LengthToCm);
         if (lengths.Count > 0)
         {
-            result.SizeLengthCmMin = (int)Math.Round(lengths.Min());
-            result.SizeLengthCmMax = (int)Math.Round(lengths.Max());
+            result.SizeLengthCmMin = RoundLength(lengths.Min());
+            result.SizeLengthCmMax = RoundLength(lengths.Max());
         }
 
         var lifespans = GetQuantities(claims.Value, "P2250", TimeToYears);
@@ -201,6 +201,12 @@ public class WikipediaImporter
         }
 
         result.TaxonomicClass = ClassifyTaxa(ancestors.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase));
+    }
+
+    internal static decimal RoundLength(decimal centimetres)
+    {
+        var rounded = Math.Round(centimetres, 1, MidpointRounding.AwayFromZero);
+        return rounded == 0m && centimetres > 0m ? 0.1m : rounded;
     }
 
     internal static string? ClassifyTaxa(HashSet<string> taxa)

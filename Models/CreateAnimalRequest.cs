@@ -18,17 +18,17 @@ public class CreateAnimalRequest
 
     public bool IsDomesticated { get; set; }
 
-    [Range(0, int.MaxValue)]
-    public int? SizeLengthCmMin { get; set; }
+    [Range(0, 999999.9)]
+    public decimal? SizeLengthCmMin { get; set; }
 
-    [Range(0, int.MaxValue)]
-    public int? SizeLengthCmMax { get; set; }
+    [Range(0, 999999.9)]
+    public decimal? SizeLengthCmMax { get; set; }
 
-    [Range(0, int.MaxValue)]
-    public int? SizeHeightCmMin { get; set; }
+    [Range(0, 999999.9)]
+    public decimal? SizeHeightCmMin { get; set; }
 
-    [Range(0, int.MaxValue)]
-    public int? SizeHeightCmMax { get; set; }
+    [Range(0, 999999.9)]
+    public decimal? SizeHeightCmMax { get; set; }
 
     [Range(0, 99999.99)]
     public decimal? WeightKgMin { get; set; }

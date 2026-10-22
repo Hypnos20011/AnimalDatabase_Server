@@ -102,15 +102,32 @@ public class WikipediaImporterTests
     }
 
     [Fact]
-    public async Task Tardigrade_length_of_half_a_millimetre_rounds_to_zero_centimetres()
+    public async Task Tardigrade_length_of_half_a_millimetre_becomes_a_tenth_of_a_centimetre()
     {
         var (importer, _) = TestImporter.Create();
 
         var result = await importer.ImportByNameAsync("tardigrade");
 
         Assert.NotNull(result);
-        Assert.Equal(0, result.SizeLengthCmMin);
-        Assert.Equal(0, result.SizeLengthCmMax);
+        Assert.Equal<decimal?>(0.1m, result.SizeLengthCmMin);
+        Assert.Equal<decimal?>(0.1m, result.SizeLengthCmMax);
+    }
+
+    [Theory]
+    [InlineData(0.05, 0.1)]
+    [InlineData(0.01, 0.1)]
+    [InlineData(0.0, 0.0)]
+    [InlineData(0.25, 0.3)]
+    [InlineData(0.35, 0.4)]
+    [InlineData(12.34, 12.3)]
+    [InlineData(12.35, 12.4)]
+    [InlineData(149.96, 150.0)]
+    [InlineData(150.0, 150.0)]
+    public void RoundLength_keeps_one_decimal_rounds_half_away_from_zero_and_never_gives_zero_for_a_real_length(
+        double centimetres,
+        double expected)
+    {
+        Assert.Equal((decimal)expected, WikipediaImporter.RoundLength((decimal)centimetres));
     }
 
     [Fact]

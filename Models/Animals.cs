@@ -11,10 +11,10 @@ public class Animal
     public string? TaxonomicClass { get; set; }
     public bool IsDomesticated { get; set; }
 
-    public int? SizeLengthCmMin { get; set; }
-    public int? SizeLengthCmMax { get; set; }
-    public int? SizeHeightCmMin { get; set; }
-    public int? SizeHeightCmMax { get; set; }
+    public decimal? SizeLengthCmMin { get; set; }
+    public decimal? SizeLengthCmMax { get; set; }
+    public decimal? SizeHeightCmMin { get; set; }
+    public decimal? SizeHeightCmMax { get; set; }
 
     public decimal? WeightKgMin { get; set; }
     public decimal? WeightKgMax { get; set; }

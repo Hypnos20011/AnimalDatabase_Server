@@ -6,8 +6,8 @@ public class WikipediaImportResult
     public string? ScientificName { get; set; }
     public string? Family { get; set; }
     public string? TaxonomicClass { get; set; }
-    public int? SizeLengthCmMin { get; set; }
-    public int? SizeLengthCmMax { get; set; }
+    public decimal? SizeLengthCmMin { get; set; }
+    public decimal? SizeLengthCmMax { get; set; }
     public decimal? WeightKgMin { get; set; }
     public decimal? WeightKgMax { get; set; }
     public int? LifespanYearsMin { get; set; }

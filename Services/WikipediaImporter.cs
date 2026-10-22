@@ -8,6 +8,7 @@ namespace AnimalDatabase.Api.Services;
 public class WikipediaImporter
 {
     private const string RankFamily = "Q35409";
+    private const string AdultRole = "Q78101716";
 
     private static readonly Dictionary<string, string> IucnStatuses = new()
     {
@@ -164,9 +165,11 @@ public class WikipediaImporter
         result.ScientificName = Truncate(GetStringClaims(claims.Value, "P225").FirstOrDefault(), 150);
 
         var status = GetItemClaims(claims.Value, "P141").FirstOrDefault();
-        if (status is not null && IucnStatuses.TryGetValue(status, out var statusName))
+        if (status is not null)
         {
-            result.IucnStatus = statusName;
+            result.IucnStatus = IucnStatuses.TryGetValue(status, out var statusName)
+                ? statusName
+                : await GetStatusFromLabelAsync(status);
         }
 
         var weights = GetQuantities(claims.Value, "P2067", MassToKg);
@@ -370,6 +373,31 @@ public class WikipediaImporter
         }
     }
 
+    private async Task<string?> GetStatusFromLabelAsync(string qid)
+    {
+        using var doc = await GetJsonAsync(
+            $"https://www.wikidata.org/w/api.php?action=wbgetentities&props=labels&languages=en&format=json&ids={qid}");
+        if (doc is null
+            || !doc.RootElement.TryGetProperty("entities", out var entities)
+            || !entities.TryGetProperty(qid, out var entity)
+            || !entity.TryGetProperty("labels", out var labels)
+            || !labels.TryGetProperty("en", out var en))
+        {
+            return null;
+        }
+
+        var label = GetString(en, "value")?.Trim().ToLowerInvariant();
+        if (label is null)
+        {
+            return null;
+        }
+        if (label.EndsWith(" species"))
+        {
+            label = label[..^" species".Length];
+        }
+        return IucnStatuses.Values.FirstOrDefault(v => v == label);
+    }
+
     private static IEnumerable<string> GetStringClaims(JsonElement claims, string property) =>
         GetDataValues(claims, property)
             .Where(v => v.ValueKind == JsonValueKind.String)
@@ -385,24 +413,54 @@ public class WikipediaImporter
     private static List<decimal> GetQuantities(JsonElement claims, string property, Dictionary<string, decimal> factors)
     {
         var values = new List<decimal>();
-        foreach (var value in GetDataValues(claims, property))
+        if (!claims.TryGetProperty(property, out var list))
         {
-            if (value.ValueKind != JsonValueKind.Object)
+            return values;
+        }
+
+        foreach (var claim in list.EnumerateArray())
+        {
+            if (GetString(claim, "rank") == "deprecated" || !IsAdultOrUnspecified(claim))
             {
                 continue;
             }
-            var amount = GetString(value, "amount");
+            if (!claim.TryGetProperty("mainsnak", out var snak)
+                || !snak.TryGetProperty("datavalue", out var dataValue)
+                || !dataValue.TryGetProperty("value", out var value)
+                || value.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
             var unit = GetString(value, "unit")?.Split('/').Last();
-            if (amount is null || unit is null || !factors.TryGetValue(unit, out var factor))
+            if (unit is null || !factors.TryGetValue(unit, out var factor))
             {
                 continue;
             }
-            if (decimal.TryParse(amount, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && number >= 0)
+            foreach (var key in new[] { "amount", "lowerBound", "upperBound" })
             {
-                values.Add(number * factor);
+                if (decimal.TryParse(GetString(value, key), NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+                    && number >= 0)
+                {
+                    values.Add(number * factor);
+                }
             }
         }
         return values;
+    }
+
+    private static bool IsAdultOrUnspecified(JsonElement claim)
+    {
+        if (!claim.TryGetProperty("qualifiers", out var qualifiers)
+            || !qualifiers.TryGetProperty("P3831", out var roles))
+        {
+            return true;
+        }
+
+        return roles.EnumerateArray().Any(role =>
+            role.TryGetProperty("datavalue", out var dv)
+            && dv.TryGetProperty("value", out var v)
+            && GetString(v, "id") == AdultRole);
     }
 
     private static string? GetString(JsonElement element, string property) =>

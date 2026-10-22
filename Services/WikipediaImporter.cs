@@ -8,8 +8,6 @@ namespace AnimalDatabase.Api.Services;
 public class WikipediaImporter
 {
     private const string RankFamily = "Q35409";
-    private const string RankClass = "Q37517";
-    private const string RankPhylum = "Q38348";
 
     private static readonly Dictionary<string, string> IucnStatuses = new()
     {
@@ -23,19 +21,14 @@ public class WikipediaImporter
         ["Q3245245"] = "data deficient",
     };
 
-    private static readonly Dictionary<string, string> Classes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Mammalia"] = "mammal",
-        ["Aves"] = "bird",
-        ["Reptilia"] = "reptile",
-        ["Amphibia"] = "amphibian",
-        ["Actinopterygii"] = "fish",
-        ["Chondrichthyes"] = "fish",
-        ["Sarcopterygii"] = "fish",
-        ["Myxini"] = "fish",
-        ["Hyperoartia"] = "fish",
-        ["Petromyzontida"] = "fish",
-    };
+    private static readonly (string Class, string[] Taxa)[] ClassRules =
+    [
+        ("mammal", ["Mammalia"]),
+        ("bird", ["Aves"]),
+        ("reptile", ["Reptilia", "Squamata", "Testudines", "Crocodilia", "Rhynchocephalia", "Sauropsida"]),
+        ("amphibian", ["Amphibia", "Lissamphibia"]),
+        ("fish", ["Actinopterygii", "Actinopteri", "Teleostei", "Chondrichthyes", "Elasmobranchii", "Holocephali", "Myxini", "Hyperoartia", "Petromyzontida", "Agnatha", "Dipnoi", "Actinistia", "Coelacanthiformes"]),
+    ];
 
     private static readonly Dictionary<string, decimal> MassToKg = new()
     {
@@ -197,32 +190,37 @@ public class WikipediaImporter
             result.LifespanYearsMax = (int)Math.Round(lifespans.Max());
         }
 
-        string? className = null;
-        string? phylumName = null;
-        foreach (var (rank, name) in await GetAncestorRanksAsync(qid))
+        var ancestors = await GetAncestorsAsync(qid);
+        var family = ancestors.FirstOrDefault(a => a.Rank == RankFamily).Name;
+        if (family is not null)
         {
-            if (rank == RankFamily)
+            result.Family ??= Truncate(family, 120);
+        }
+
+        result.TaxonomicClass = ClassifyTaxa(ancestors.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static string? ClassifyTaxa(HashSet<string> taxa)
+    {
+        foreach (var (cls, names) in ClassRules)
+        {
+            if (names.Any(taxa.Contains))
             {
-                result.Family ??= Truncate(name, 120);
-            }
-            else if (rank == RankClass)
-            {
-                className ??= name;
-            }
-            else if (rank == RankPhylum)
-            {
-                phylumName ??= name;
+                return cls;
             }
         }
 
-        if (className is not null && Classes.TryGetValue(className, out var cls))
+        if (taxa.Contains("Sarcopterygii") && !taxa.Contains("Tetrapoda"))
         {
-            result.TaxonomicClass = cls;
+            return "fish";
         }
-        else if (phylumName is not null && !phylumName.Equals("Chordata", StringComparison.OrdinalIgnoreCase))
+
+        if (taxa.Contains("Animalia") && !taxa.Contains("Vertebrata"))
         {
-            result.TaxonomicClass = "invertebrate";
+            return "invertebrate";
         }
+
+        return null;
     }
 
     private async Task<string?> SearchTitleAsync(string language, string name)
@@ -246,16 +244,16 @@ public class WikipediaImporter
         return titles.FirstOrDefault(t => t.Equals(name, StringComparison.OrdinalIgnoreCase)) ?? titles.FirstOrDefault();
     }
 
-    private async Task<List<(string Rank, string Name)>> GetAncestorRanksAsync(string qid)
+    private async Task<List<(string? Rank, string Name)>> GetAncestorsAsync(string qid)
     {
         var query = $$"""
             SELECT ?rank ?name WHERE {
-              wd:{{qid}} wdt:P171+ ?taxon .
-              ?taxon wdt:P105 ?rank ; wdt:P225 ?name .
-              FILTER(?rank IN (wd:{{RankFamily}}, wd:{{RankClass}}, wd:{{RankPhylum}}))
+              wd:{{qid}} wdt:P171* ?taxon .
+              ?taxon wdt:P225 ?name .
+              OPTIONAL { ?taxon wdt:P105 ?rank . }
             }
             """;
-        var ranks = new List<(string Rank, string Name)>();
+        var ranks = new List<(string? Rank, string Name)>();
         using var doc = await GetJsonAsync(
             $"https://query.wikidata.org/sparql?format=json&query={Uri.EscapeDataString(query)}");
         if (doc is null
@@ -269,7 +267,7 @@ public class WikipediaImporter
         {
             var rank = row.TryGetProperty("rank", out var r) ? GetString(r, "value")?.Split('/').Last() : null;
             var name = row.TryGetProperty("name", out var n) ? GetString(n, "value") : null;
-            if (rank is not null && name is not null)
+            if (name is not null)
             {
                 ranks.Add((rank, name));
             }

@@ -1,0 +1,57 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace AnimalDatabase.Api.Models;
+
+public class CreateAnimalRequest
+{
+    [Required, MaxLength(120)]
+    public string CommonName { get; set; } = string.Empty;
+
+    [MaxLength(150)]
+    public string? ScientificName { get; set; }
+
+    [MaxLength(120)]
+    public string? Family { get; set; }
+
+    [MaxLength(40)]
+    public string? TaxonomicClass { get; set; }
+
+    public bool IsDomesticated { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? SizeLengthCmMin { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? SizeLengthCmMax { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? SizeHeightCmMin { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? SizeHeightCmMax { get; set; }
+
+    [Range(0, 99999.99)]
+    public decimal? WeightKgMin { get; set; }
+
+    [Range(0, 99999.99)]
+    public decimal? WeightKgMax { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? LifespanYearsMin { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? LifespanYearsMax { get; set; }
+
+    [MaxLength(40)]
+    public string? IucnStatus { get; set; }
+
+    [MaxLength(255)]
+    public string? Habitat { get; set; }
+
+    [MaxLength(255)]
+    public string? RangeRegion { get; set; }
+
+    public string? Profile { get; set; }
+
+    public List<CreateAnimalImageRequest> Images { get; set; } = new();
+}

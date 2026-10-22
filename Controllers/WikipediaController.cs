@@ -16,19 +16,27 @@ public class WikipediaController : ControllerBase
     }
 
     [HttpGet("import")]
-    public async Task<ActionResult<WikipediaImportResult>> Import([FromQuery] string url)
+    public async Task<ActionResult<WikipediaImportResult>> Import([FromQuery] string q)
     {
-        if (string.IsNullOrWhiteSpace(url) || !WikipediaImporter.TryParseUrl(url, out var language, out var title))
+        if (string.IsNullOrWhiteSpace(q) || q.Length > 300)
         {
-            return BadRequest("That isn't a Wikipedia article link.");
+            return BadRequest("Type an animal name or paste a Wikipedia link.");
         }
 
         try
         {
-            var result = await _importer.ImportAsync(language, title);
+            var isLink = q.Contains("wikipedia.org", StringComparison.OrdinalIgnoreCase);
+            if (isLink && !WikipediaImporter.TryParseUrl(q, out _, out _))
+            {
+                return BadRequest("That isn't a Wikipedia article link.");
+            }
+
+            var result = isLink && WikipediaImporter.TryParseUrl(q, out var language, out var title)
+                ? await _importer.ImportAsync(language, title)
+                : await _importer.ImportByNameAsync(q);
             if (result is null)
             {
-                return NotFound("No Wikipedia article found for that link.");
+                return NotFound("Couldn't find a Wikipedia article for that.");
             }
             return Ok(result);
         }

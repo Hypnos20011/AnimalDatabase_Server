@@ -102,7 +102,13 @@ public class WikipediaImporter
         return title.Length > 0;
     }
 
-    public async Task<WikipediaImportResult?> ImportAsync(string language, string title)
+    public async Task<WikipediaImportResult?> ImportByNameAsync(string name)
+    {
+        var title = await SearchTitleAsync("en", name.Trim());
+        return title is null ? null : await ImportAsync("en", title, name.Trim());
+    }
+
+    public async Task<WikipediaImportResult?> ImportAsync(string language, string title, string? preferredName = null)
     {
         var encodedTitle = Uri.EscapeDataString(title.Replace(' ', '_'));
         using var summary = await GetJsonAsync($"https://{language}.wikipedia.org/api/rest_v1/page/summary/{encodedTitle}");
@@ -137,9 +143,10 @@ public class WikipediaImporter
 
         if (result.ScientificName is not null
             && result.ScientificName.Equals(pageTitle, StringComparison.OrdinalIgnoreCase)
-            && !title.Equals(pageTitle, StringComparison.OrdinalIgnoreCase))
+            && !(preferredName ?? title).Equals(pageTitle, StringComparison.OrdinalIgnoreCase))
         {
-            result.CommonName = Truncate(char.ToUpper(title[0]) + title[1..], 120);
+            var name = preferredName ?? title;
+            result.CommonName = Truncate(char.ToUpper(name[0]) + name[1..], 120);
         }
 
         var funFact = await FindFunFactAsync(language, pageTitle, extract);
@@ -216,6 +223,27 @@ public class WikipediaImporter
         {
             result.TaxonomicClass = "invertebrate";
         }
+    }
+
+    private async Task<string?> SearchTitleAsync(string language, string name)
+    {
+        using var doc = await GetJsonAsync(
+            $"https://{language}.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=8&gsrnamespace=0&prop=pageprops&ppprop=disambiguation&format=json&formatversion=2&gsrsearch={Uri.EscapeDataString(name)}");
+        if (doc is null
+            || !doc.RootElement.TryGetProperty("query", out var query)
+            || !query.TryGetProperty("pages", out var pages))
+        {
+            return null;
+        }
+
+        var titles = pages.EnumerateArray()
+            .Where(p => !(p.TryGetProperty("pageprops", out var props) && props.TryGetProperty("disambiguation", out _)))
+            .OrderBy(p => p.TryGetProperty("index", out var index) ? index.GetInt32() : int.MaxValue)
+            .Select(p => GetString(p, "title"))
+            .Where(t => t is not null)
+            .Select(t => t!)
+            .ToList();
+        return titles.FirstOrDefault(t => t.Equals(name, StringComparison.OrdinalIgnoreCase)) ?? titles.FirstOrDefault();
     }
 
     private async Task<List<(string Rank, string Name)>> GetAncestorRanksAsync(string qid)

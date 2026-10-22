@@ -46,4 +46,26 @@ public class AnimalsController : ControllerBase
         var animal = await _repository.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = animal.Id }, animal);
     }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<Animal>> Update(int id, CreateAnimalRequest request)
+    {
+        var animal = await _repository.UpdateAsync(id, request);
+        if (animal is null)
+        {
+            return NotFound();
+        }
+        return Ok(animal);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var deleted = await _repository.DeleteAsync(id);
+        if (!deleted)
+        {
+            return NotFound();
+        }
+        return NoContent();
+    }
 }

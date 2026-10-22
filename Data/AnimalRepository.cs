@@ -6,6 +6,9 @@ namespace AnimalDatabase.Api.Data;
 
 public class AnimalRepository
 {
+    private const string SelectAnimals =
+        "SELECT a.*, (SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) AS thumbnail_url FROM animals a";
+
     private readonly string _connectionString;
 
     public AnimalRepository(IConfiguration configuration)
@@ -17,7 +20,7 @@ public class AnimalRepository
     public async Task<IReadOnlyList<Animal>> GetAllAsync()
     {
         await using var connection = new MySqlConnection(_connectionString);
-        var rows = await connection.QueryAsync<Animal>("SELECT a.*, (SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) AS thumbnail_url FROM animals a ORDER BY a.common_name");
+        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} ORDER BY a.common_name");
         return rows.ToList();
     }
 
@@ -25,7 +28,7 @@ public class AnimalRepository
     {
         await using var connection = new MySqlConnection(_connectionString);
         return await connection.QuerySingleOrDefaultAsync<Animal>(
-            "SELECT a.*, (SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) AS thumbnail_url FROM animals a WHERE a.id = @Id",
+            $"{SelectAnimals} WHERE a.id = @Id",
             new { Id = id });
     }
 
@@ -58,41 +61,116 @@ public class AnimalRepository
                 @IucnStatus, @Habitat, @RangeRegion, @Profile);
             SELECT LAST_INSERT_ID();
             """,
-            new
-            {
-                request.CommonName,
-                request.ScientificName,
-                request.Family,
-                request.TaxonomicClass,
-                request.IsDomesticated,
-                request.SizeLengthCmMin,
-                request.SizeLengthCmMax,
-                request.SizeHeightCmMin,
-                request.SizeHeightCmMax,
-                request.WeightKgMin,
-                request.WeightKgMax,
-                request.LifespanYearsMin,
-                request.LifespanYearsMax,
-                request.IucnStatus,
-                request.Habitat,
-                request.RangeRegion,
-                request.Profile,
-            },
+            ToParameters(request),
             transaction);
 
+        await InsertImagesAsync(connection, transaction, id, request.Images);
+
+        await transaction.CommitAsync();
+        return (await GetByIdAsync(id))!;
+    }
+
+    public async Task<Animal?> UpdateAsync(int id, CreateAnimalRequest request)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+
+        var exists = await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM animals WHERE id = @Id",
+            new { Id = id },
+            transaction);
+        if (exists == 0)
+        {
+            return null;
+        }
+
+        var parameters = ToParameters(request);
+        parameters.Add("Id", id);
+        await connection.ExecuteAsync(
+            """
+            UPDATE animals SET
+                common_name = @CommonName,
+                scientific_name = @ScientificName,
+                family = @Family,
+                taxonomic_class = @TaxonomicClass,
+                is_domesticated = @IsDomesticated,
+                size_length_cm_min = @SizeLengthCmMin,
+                size_length_cm_max = @SizeLengthCmMax,
+                size_height_cm_min = @SizeHeightCmMin,
+                size_height_cm_max = @SizeHeightCmMax,
+                weight_kg_min = @WeightKgMin,
+                weight_kg_max = @WeightKgMax,
+                lifespan_years_min = @LifespanYearsMin,
+                lifespan_years_max = @LifespanYearsMax,
+                iucn_status = @IucnStatus,
+                habitat = @Habitat,
+                range_region = @RangeRegion,
+                profile = @Profile
+            WHERE id = @Id;
+            """,
+            parameters,
+            transaction);
+
+        await connection.ExecuteAsync(
+            "DELETE FROM animal_images WHERE animal_id = @Id",
+            new { Id = id },
+            transaction);
+        await InsertImagesAsync(connection, transaction, id, request.Images);
+
+        await transaction.CommitAsync();
+        return await GetByIdAsync(id);
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        var affected = await connection.ExecuteAsync(
+            "DELETE FROM animals WHERE id = @Id",
+            new { Id = id });
+        return affected > 0;
+    }
+
+    private static DynamicParameters ToParameters(CreateAnimalRequest request)
+    {
+        return new DynamicParameters(new
+        {
+            request.CommonName,
+            request.ScientificName,
+            request.Family,
+            request.TaxonomicClass,
+            request.IsDomesticated,
+            request.SizeLengthCmMin,
+            request.SizeLengthCmMax,
+            request.SizeHeightCmMin,
+            request.SizeHeightCmMax,
+            request.WeightKgMin,
+            request.WeightKgMax,
+            request.LifespanYearsMin,
+            request.LifespanYearsMax,
+            request.IucnStatus,
+            request.Habitat,
+            request.RangeRegion,
+            request.Profile,
+        });
+    }
+
+    private static async Task InsertImagesAsync(
+        MySqlConnection connection,
+        MySqlTransaction transaction,
+        int animalId,
+        IEnumerable<CreateAnimalImageRequest> images)
+    {
         var sortOrder = 0;
-        foreach (var image in request.Images)
+        foreach (var image in images)
         {
             await connection.ExecuteAsync(
                 """
                 INSERT INTO animal_images (animal_id, kind, url, caption, sort_order)
                 VALUES (@AnimalId, @Kind, @Url, @Caption, @SortOrder);
                 """,
-                new { AnimalId = id, image.Kind, image.Url, image.Caption, SortOrder = sortOrder++ },
+                new { AnimalId = animalId, image.Kind, image.Url, image.Caption, SortOrder = sortOrder++ },
                 transaction);
         }
-
-        await transaction.CommitAsync();
-        return (await GetByIdAsync(id))!;
     }
 }

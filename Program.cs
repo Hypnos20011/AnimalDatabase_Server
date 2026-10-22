@@ -3,6 +3,7 @@ using AnimalDatabase.Api.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<AnimalRepository>();
+builder.Services.AddSingleton<SearchRepository>();
 
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
 {

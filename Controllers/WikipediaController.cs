@@ -1,4 +1,5 @@
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.Security;
 using AnimalDatabase.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +17,7 @@ public class WikipediaController : ControllerBase
     }
 
     [HttpGet("import")]
+    [RequireAdminKey]
     public async Task<ActionResult<WikipediaImportResult>> Import([FromQuery] string q)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length > 300)

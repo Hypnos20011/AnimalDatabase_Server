@@ -1,5 +1,6 @@
 using AnimalDatabase.Api.Data;
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AnimalDatabase.Api.Controllers;
@@ -41,6 +42,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPost]
+    [RequireAdminKey]
     public async Task<ActionResult<Animal>> Create(CreateAnimalRequest request)
     {
         var animal = await _repository.CreateAsync(request);
@@ -48,6 +50,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [RequireAdminKey]
     public async Task<ActionResult<Animal>> Update(int id, CreateAnimalRequest request)
     {
         var animal = await _repository.UpdateAsync(id, request);
@@ -59,6 +62,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [RequireAdminKey]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _repository.DeleteAsync(id);

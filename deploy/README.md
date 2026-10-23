@@ -26,6 +26,7 @@ deploy/
   schema.sql               schema + data of the local animaldatabase (no users, no grants)
   init/02-app-user.sh      first start only: creates the limited app user from .env
   backup/backup.sh         nightly dump loop used by the backup service
+  redeploy.ps1             PC -> server deploy without GitHub access on the server (see "Deploying from the PC")
 ```
 
 ### How the Angular source gets into the image
@@ -237,6 +238,27 @@ cd ~/apps/AnimalDatabase_Server && git pull
 cd deploy && docker compose up -d --build
 docker image prune -f
 ```
+
+### Deploying from the PC (current setup)
+
+The live server (`deploy@49.12.226.169`, `/opt/animaldatabase`) has no GitHub access. The code is copied
+from the PC instead, as `git archive` of `master` of both repos:
+
+```
+/opt/animaldatabase/
+  AnimalDatabase_Server/   API repo, deploy/.env lives here (mode 600, never in git)
+  AnimalDatabase_UI/       UI repo, picked up through UI_SOURCE=../../AnimalDatabase_UI
+```
+
+Commit (and push) first, then from PowerShell on the PC:
+
+```powershell
+D:\AnimalDatabase.Api\deploy\redeploy.ps1
+```
+
+It archives `master` of both repos, copies the archives over SSH, takes a backup, swaps the folders
+(keeping `.env`), runs `docker compose up -d --build` and prunes old images. Only committed changes are
+deployed. Options: `-Ref <branch>`, `-SkipBackup`, `-Server deploy@<ip>`, `-UiRepo <path>`.
 
 `schema.sql` is not re-applied to an existing database. Schema changes need an `ALTER TABLE` run by hand
 (see "Database shell" below).

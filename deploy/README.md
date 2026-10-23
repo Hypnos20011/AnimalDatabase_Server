@@ -205,6 +205,9 @@ manager; it is what you type on the site's admin page.
 - Own domain: create an `A` record (and `AAAA` for the IPv6) pointing at the server first, then put the
   name here, e.g. `animals.example.org`.
 
+`OLD_DOMAIN` (optional): a previous address that should permanently redirect (308) to `DOMAIN`, e.g.
+the sslip.io name after switching to your own domain. Leave it empty if there is none.
+
 ### 7. Start it
 
 ```bash
@@ -242,7 +245,8 @@ docker image prune -f
 
 ### Deploying from the PC (current setup)
 
-The live server (`deploy@49.12.226.169`, `/opt/animaldatabase`) has no GitHub access. The code is copied
+The live server (https://unusualanimals.duckdns.org, `deploy@49.12.226.169`, `/opt/animaldatabase`; the old
+https://49-12-226-169.sslip.io address redirects there via `OLD_DOMAIN`) has no GitHub access. The code is copied
 from the PC instead, as `git archive` of `master` of both repos:
 
 ```

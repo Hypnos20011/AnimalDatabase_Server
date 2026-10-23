@@ -12,6 +12,7 @@ services:
       - "${HTTPS_PORT:-443}:443/udp"
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      OLD_DOMAIN: ${OLD_DOMAIN:-http://old.invalid}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

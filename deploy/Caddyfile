@@ -10,3 +10,7 @@
 
 	reverse_proxy api:8080
 }
+
+{$OLD_DOMAIN} {
+	redir https://{$DOMAIN}{uri} 308
+}

@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $sshOptions = @('-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=20')
-$logFile = Join-Path $LocalDir 'pull.log'
+$logFile = [IO.Path]::Combine($LocalDir, 'pull.log')
 
 function Write-Log([string]$Message) {
     $line = '{0} {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message
@@ -36,7 +36,7 @@ try {
     $listing = Invoke-Ssh "find '$RemoteDir' -maxdepth 1 -type f -name '*.sql.gz' -printf '%f %s\n'"
 }
 catch {
-    Write-Log "server unreachable ($($_.Exception.Message)); nothing copied"
+    Write-Log "could not connect to the server ($($_.Exception.Message)); nothing copied"
     exit 0
 }
 
@@ -96,7 +96,7 @@ if ($local.Count -gt $Keep) {
 }
 $total = @(Get-ChildItem -LiteralPath $LocalDir -Filter '*.sql.gz' -File).Count
 
-$summary = "server $($remoteFiles.Count), copied $copied (SHA-256 verified), removed locally $removed, local total $total"
+$summary = "server has $($remoteFiles.Count), copied $copied (size and SHA-256 checked), removed locally $removed, local total $total"
 if ($failed.Count -gt 0) {
     Write-Log "$summary; FAILED: $($failed -join ', ')"
     exit 1

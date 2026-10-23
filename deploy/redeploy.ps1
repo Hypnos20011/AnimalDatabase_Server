@@ -55,6 +55,7 @@ mv AnimalDatabase_UI.new AnimalDatabase_UI
 rm -f /tmp/server.tar.gz /tmp/ui.tar.gz /tmp/schema.sql
 cd AnimalDatabase_Server/deploy
 docker compose up -d --build
+docker compose up -d --no-deps --force-recreate api
 docker image prune -f >/dev/null
 docker compose ps
 "@

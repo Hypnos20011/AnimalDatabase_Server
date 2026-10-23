@@ -19,8 +19,11 @@ public class WikipediaImporterTests
         Assert.Equal("endangered", result.IucnStatus);
         Assert.Equal<decimal?>(200m, result.WeightKgMin);
         Assert.Equal<decimal?>(300m, result.WeightKgMax);
-        Assert.Null(result.SizeLengthCmMin);
-        Assert.Null(result.LifespanYearsMin);
+        Assert.Equal<decimal?>(250m, result.SizeLengthCmMin);
+        Assert.Equal<decimal?>(250m, result.SizeLengthCmMax);
+        Assert.Equal<int?>(20, result.LifespanYearsMin);
+        Assert.Equal<int?>(30, result.LifespanYearsMax);
+        Assert.Equal("Democratic Republic of the Congo", result.RangeRegion);
         Assert.Equal("https://en.wikipedia.org/wiki/Okapi", result.SourceUrl);
         Assert.StartsWith("https://thumb.wikimedia.org/", result.ImageUrl);
         Assert.DoesNotContain("?", result.ImageUrl);
@@ -209,7 +212,7 @@ public class WikipediaImporterTests
     }
 
     [Fact]
-    public async Task Unknown_status_label_gives_no_status()
+    public async Task Unknown_status_label_falls_back_to_the_infobox_status()
     {
         var (importer, handler) = TestImporter.Create();
         handler.Override(
@@ -219,7 +222,7 @@ public class WikipediaImporterTests
         var result = await importer.ImportByNameAsync("okapi");
 
         Assert.NotNull(result);
-        Assert.Null(result.IucnStatus);
+        Assert.Equal("endangered", result.IucnStatus);
         Assert.Equal("mammal", result.TaxonomicClass);
     }
 

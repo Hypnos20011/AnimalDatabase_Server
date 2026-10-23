@@ -8,6 +8,7 @@ namespace AnimalDatabase.Api.Tests;
 public sealed class FixtureHttpHandler : HttpMessageHandler
 {
     private readonly Dictionary<string, string> _overrides = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _gate = new();
 
     public List<string> RequestedKeys { get; } = new();
 
@@ -17,7 +18,19 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
 
     public Exception? Failure { get; set; }
 
+    private readonly Dictionary<string, Queue<HttpStatusCode>> _failures = new(StringComparer.OrdinalIgnoreCase);
+
     public void Override(string key, string json) => _overrides[key] = json;
+
+    public void FailNext(string key, HttpStatusCode status)
+    {
+        if (!_failures.TryGetValue(key, out var queue))
+        {
+            queue = new Queue<HttpStatusCode>();
+            _failures[key] = queue;
+        }
+        queue.Enqueue(status);
+    }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -26,14 +39,25 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
             throw Failure;
         }
 
-        RequestedUris.Add(request.RequestUri!);
         var key = KeyFor(request.RequestUri!);
-        RequestedKeys.Add(key);
+        string? json;
+        lock (_gate)
+        {
+            RequestedUris.Add(request.RequestUri!);
+            RequestedKeys.Add(key);
+            if (_failures.TryGetValue(key, out var queue) && queue.Count > 0)
+            {
+                return Task.FromResult(new HttpResponseMessage(queue.Dequeue()));
+            }
+            json = _overrides.TryGetValue(key, out var overridden) ? overridden : ReadFixture(key);
+            if (json is null)
+            {
+                MissingKeys.Add(key);
+            }
+        }
 
-        var json = _overrides.TryGetValue(key, out var overridden) ? overridden : ReadFixture(key);
         if (json is null)
         {
-            MissingKeys.Add(key);
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
         }
 
@@ -72,7 +96,7 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
         return $"{query["prop"]}/{Clean(query["titles"] ?? string.Empty)}";
     }
 
-    private static string Clean(string value) => value.Replace(' ', '_');
+    private static string Clean(string value) => Regex.Replace(value.Replace(' ', '_'), @"[:*?""<>|]", "_");
 
     private static string? ReadFixture(string key)
     {

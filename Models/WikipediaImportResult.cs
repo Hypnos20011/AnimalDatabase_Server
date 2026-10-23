@@ -13,6 +13,8 @@ public class WikipediaImportResult
     public int? LifespanYearsMin { get; set; }
     public int? LifespanYearsMax { get; set; }
     public string? IucnStatus { get; set; }
+    public string? Habitat { get; set; }
+    public string? RangeRegion { get; set; }
     public string? Profile { get; set; }
     public string? ImageUrl { get; set; }
     public string? SourceUrl { get; set; }

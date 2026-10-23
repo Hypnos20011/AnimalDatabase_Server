@@ -1,4 +1,5 @@
 using AnimalDatabase.Api.Data;
+using AnimalDatabase.Api.Hosting;
 using AnimalDatabase.Api.OpenApi;
 using AnimalDatabase.Api.RateLimiting;
 using AnimalDatabase.Api.Services;
@@ -22,23 +23,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .WithExposedHeaders("Retry-After");
-    });
-});
+builder.Services.AddConfiguredCors();
 
-builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(ClientIp.ConfigureForwardedHeaders);
+builder.Services.AddOptions<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>()
+    .Configure<IConfiguration>((options, configuration) => ClientIp.ConfigureForwardedHeaders(options, configuration));
 builder.Services.AddApiRateLimiting(builder.Configuration);
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var app = builder.Build();
+
+var spaRoot = SpaHosting.ResolveRoot(app.Configuration, app.Environment);
 
 app.UseCloudflareClientIp();
 app.UseForwardedHeaders();
@@ -49,8 +44,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options => options.UseVersionedAssets());
 }
 
+if (spaRoot is not null)
+{
+    app.UseSpaFiles(spaRoot);
+}
+
 app.UseCors();
 app.UseRateLimiter();
 app.MapControllers();
+app.MapReservedNotFound();
+
+if (spaRoot is not null)
+{
+    app.MapSpaFallback(spaRoot);
+}
 
 app.Run();

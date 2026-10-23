@@ -8,7 +8,14 @@ public static class ClientIp
     public const string CloudflareHeader = "CF-Connecting-IP";
     public const string ForwardedForHeader = "X-Forwarded-For";
 
+    public const string TrustSection = "ForwardedHeaders";
+
     public static void ConfigureForwardedHeaders(ForwardedHeadersOptions options)
+    {
+        ConfigureForwardedHeaders(options, null);
+    }
+
+    public static void ConfigureForwardedHeaders(ForwardedHeadersOptions options, IConfiguration? configuration)
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
         options.ForwardLimit = null;
@@ -16,6 +23,38 @@ public static class ClientIp
         options.KnownProxies.Clear();
         options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("127.0.0.0/8"));
         options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("::1/128"));
+
+        if (configuration is null)
+        {
+            return;
+        }
+
+        var section = configuration.GetSection(TrustSection);
+        foreach (var value in Values(section.GetSection("KnownProxies")))
+        {
+            if (!IPAddress.TryParse(value, out var proxy))
+            {
+                throw new InvalidOperationException($"{TrustSection}:KnownProxies has an invalid IP address: {value}");
+            }
+            options.KnownProxies.Add(Normalize(proxy));
+        }
+        foreach (var value in Values(section.GetSection("KnownNetworks")))
+        {
+            if (!System.Net.IPNetwork.TryParse(value, out var network))
+            {
+                throw new InvalidOperationException($"{TrustSection}:KnownNetworks has an invalid network: {value}");
+            }
+            options.KnownIPNetworks.Add(network);
+        }
+    }
+
+    private static IEnumerable<string> Values(IConfigurationSection section)
+    {
+        var single = section.Value;
+        var items = string.IsNullOrWhiteSpace(single)
+            ? section.GetChildren().Select(child => child.Value ?? string.Empty)
+            : single.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        return items.Select(item => item.Trim()).Where(item => item.Length > 0);
     }
 
     public static IApplicationBuilder UseCloudflareClientIp(this IApplicationBuilder app)

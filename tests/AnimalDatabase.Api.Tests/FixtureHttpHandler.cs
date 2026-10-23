@@ -11,6 +11,8 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
 
     public List<string> RequestedKeys { get; } = new();
 
+    public List<Uri> RequestedUris { get; } = new();
+
     public List<string> MissingKeys { get; } = new();
 
     public Exception? Failure { get; set; }
@@ -24,6 +26,7 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
             throw Failure;
         }
 
+        RequestedUris.Add(request.RequestUri!);
         var key = KeyFor(request.RequestUri!);
         RequestedKeys.Add(key);
 

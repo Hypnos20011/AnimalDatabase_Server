@@ -287,7 +287,7 @@ public class WikipediaImporter
     private async Task<string?> GetImageAsync(string language, string title)
     {
         using var doc = await GetJsonAsync(
-            $"https://{language}.wikipedia.org/w/api.php?action=query&prop=pageimages&piprop=thumbnail&pithumbsize=500&format=json&formatversion=2&titles={Uri.EscapeDataString(title)}");
+            $"https://{language}.wikipedia.org/w/api.php?action=query&prop=pageimages&piprop=thumbnail&pithumbsize=1280&format=json&formatversion=2&titles={Uri.EscapeDataString(title)}");
         if (doc is null
             || !doc.RootElement.TryGetProperty("query", out var query)
             || !query.TryGetProperty("pages", out var pages)

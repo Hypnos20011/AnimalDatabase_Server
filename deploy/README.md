@@ -28,6 +28,7 @@ deploy/
   backup/backup.sh         nightly dump loop used by the backup service
   redeploy.ps1             PC -> server deploy without GitHub access on the server (see "Deploying from the PC")
   pull-backups.ps1         copies new server backups to D:\AnimalDatabase-server-backups (see "Backups and restore")
+  watchdog/                health check every 5 minutes that posts to a webhook on down/recovered (see "Watchdog")
 ```
 
 ### How the Angular source gets into the image
@@ -340,6 +341,32 @@ docker compose down
 docker volume rm animaldatabase_mariadb_data
 docker compose up -d
 ```
+
+## Watchdog
+
+`watchdog/watchdog.sh` runs as root from a systemd timer every 5 minutes (`animaldatabase-watchdog.timer`).
+It checks `https://<DOMAIN>/` and `/api/animals` through the local Caddy (`--resolve <DOMAIN>:443:127.0.0.1`)
+and that the `caddy`, `api` and `mariadb` containers are running (and healthy where they have a
+healthcheck). Two failed runs in a row count as down. It POSTs JSON (`status` = `down`, `recovered` or
+`test`, `failed`, `detail`, `time` in UTC, `host`) only when the state changes, so at most one post per
+outage and one on recovery; a failed post is retried on the next run. State: `/var/lib/animaldatabase-watchdog/state`.
+
+The webhook URL and key live only in `/etc/animaldatabase-alert.env` (root, mode 600, format as in
+`watchdog/alert.env.example`, never in git). The key is sent as `Authorization: Bearer <key>`.
+
+Install or update on the server, from a folder holding the files:
+
+```bash
+sudo install -o root -g root -m 600 alert.env /etc/animaldatabase-alert.env
+sudo install -o root -g root -m 755 watchdog.sh /usr/local/bin/animaldatabase-watchdog
+sudo install -o root -g root -m 644 animaldatabase-watchdog.service animaldatabase-watchdog.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now animaldatabase-watchdog.timer
+sudo animaldatabase-watchdog --test "watchdog installed"
+```
+
+Check it: `systemctl list-timers animaldatabase-watchdog.timer` and
+`journalctl -u animaldatabase-watchdog.service -n 20`.
 
 ## Database shell
 

@@ -1,4 +1,6 @@
 using AnimalDatabase.Api.Data;
+using AnimalDatabase.Api.OpenApi;
+using AnimalDatabase.Api.RateLimiting;
 using AnimalDatabase.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,21 +28,29 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:4200")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .WithExposedHeaders("Retry-After");
     });
 });
+
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(ClientIp.ConfigureForwardedHeaders);
+builder.Services.AddApiRateLimiting(builder.Configuration);
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var app = builder.Build();
 
+app.UseCloudflareClientIp();
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options => options.UseVersionedAssets());
 }
 
 app.UseCors();
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();

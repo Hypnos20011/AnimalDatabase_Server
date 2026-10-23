@@ -1,7 +1,9 @@
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.RateLimiting;
 using AnimalDatabase.Api.Security;
 using AnimalDatabase.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AnimalDatabase.Api.Controllers;
 
@@ -17,6 +19,7 @@ public class WikipediaController : ControllerBase
     }
 
     [HttpGet("import")]
+    [EnableRateLimiting(RateLimitPolicies.WikipediaImport)]
     [RequireAdminKey]
     public async Task<ActionResult<WikipediaImportResult>> Import([FromQuery] string q)
     {

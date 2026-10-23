@@ -1,6 +1,8 @@
 using AnimalDatabase.Api.Data;
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AnimalDatabase.Api.Controllers;
 
@@ -19,6 +21,7 @@ public class SearchesController : ControllerBase
     }
 
     [HttpPost]
+    [EnableRateLimiting(RateLimitPolicies.SearchLog)]
     public async Task<IActionResult> Create(CreateSearchRequest request)
     {
         var added = await _repository.AddAsync(request);

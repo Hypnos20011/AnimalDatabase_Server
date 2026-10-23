@@ -27,6 +27,7 @@ deploy/
   init/02-app-user.sh      first start only: creates the limited app user from .env
   backup/backup.sh         nightly dump loop used by the backup service
   redeploy.ps1             PC -> server deploy without GitHub access on the server (see "Deploying from the PC")
+  pull-backups.ps1         copies new server backups to D:\AnimalDatabase-server-backups (see "Backups and restore")
 ```
 
 ### How the Angular source gets into the image
@@ -265,8 +266,9 @@ deployed. Options: `-Ref <branch>`, `-SkipBackup`, `-Server deploy@<ip>`, `-UiRe
 
 ## Backups and restore
 
-The `backup` service writes `animaldatabase-YYYY-MM-DD_HHMMSS.sql.gz` to the `mariadb_backups` volume
-every night at `BACKUP_TIME_UTC` (default 01:30 UTC) and deletes files older than `BACKUP_KEEP_DAYS`
+The `backup` service writes `animaldatabase-YYYY-MM-DD_HHMMSS.sql.gz` to the host folder `BACKUP_HOST_DIR`
+(default `../../backups` next to the two repos, on the live server `/opt/animaldatabase/backups`; the files
+are readable by `deploy` without sudo, and the folder survives `redeploy.ps1`) every night at `BACKUP_TIME_UTC` (default 01:30 UTC) and deletes files older than `BACKUP_KEEP_DAYS`
 (default 14).
 
 ```bash
@@ -275,18 +277,45 @@ docker compose exec backup ls -lh /backups
 docker compose logs backup
 ```
 
-Copy the newest backup to your PC (run on the PC):
+### Copies on the PC's SSD
+
+`pull-backups.ps1` copies every server dump that isn't on the SSD yet into
+`D:\AnimalDatabase-server-backups\`, checks each copy against the server's SHA-256, keeps the newest 60
+files there (it never deletes anything on the server) and appends one line per run to `pull.log` in that
+folder. If D: or the folder is missing, or the server can't be reached, it exits without doing anything.
 
 ```powershell
-ssh deploy@203.0.113.10 "cd ~/apps/AnimalDatabase_Server/deploy && docker compose exec -T backup sh -c 'cat \$(ls -t /backups/*.sql.gz | head -n 1)'" > animaldatabase-latest.sql.gz
+D:\AnimalDatabase.Api\deploy\pull-backups.ps1
 ```
+
+The Windows Scheduled Task "AnimalDatabase pull backups" (current user, no admin) runs it hidden at logon
+and daily at 18:00, and catches up after a missed run.
+
+To restore one of those copies, copy it to the server and feed it to MariaDB:
+
+```powershell
+scp D:\AnimalDatabase-server-backups\animaldatabase-2026-10-24_013000.sql.gz deploy@49.12.226.169:/tmp/
+ssh deploy@49.12.226.169
+```
+
+```bash
+cd /opt/animaldatabase/AnimalDatabase_Server/deploy
+docker compose stop api
+gunzip -c /tmp/animaldatabase-2026-10-24_013000.sql.gz \
+  | docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD"'
+docker compose start api
+rm /tmp/animaldatabase-2026-10-24_013000.sql.gz
+```
+
+To load one into the local MariaDB on the PC instead, unpack it (for example with 7-Zip) and run
+`mariadb -u <user> -p < animaldatabase-....sql`; it replaces the local `animaldatabase`.
 
 Restore a backup (replaces the database contents):
 
 ```bash
 cd ~/apps/AnimalDatabase_Server/deploy
 docker compose stop api
-docker compose exec -T backup sh -c 'gunzip -c /backups/animaldatabase-2026-10-24_013000.sql.gz' \
+gunzip -c ../../backups/animaldatabase-2026-10-24_013000.sql.gz \
   | docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD"'
 docker compose start api
 ```

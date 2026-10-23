@@ -10,6 +10,7 @@ namespace AnimalDatabase.Api.Services;
 public class WikipediaImporter
 {
     private const string RankFamily = "Q35409";
+    private const string RankGenus = "Q34740";
     private const string AdultRole = "Q78101716";
     private static readonly TimeSpan AttemptTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(400);
@@ -194,7 +195,8 @@ public class WikipediaImporter
         if (english)
         {
             result.CommonName = ChooseCommonName(result, pageTitle, preferredName ?? title, wikitext, claims);
-            FillFromText(result, sections);
+            var genus = claims is not null && GetItemClaims(claims.Value, "P105").Contains(RankGenus);
+            FillFromText(result, sections, genus);
             if (result.RangeRegion is null && wikitext is not null)
             {
                 var caption = WikipediaText.ReadInfobox(wikitext).RangeMapCaption;
@@ -286,7 +288,7 @@ public class WikipediaImporter
             .ToList();
     }
 
-    private static void FillFromText(WikipediaImportResult result, List<WikipediaText.Section> sections)
+    private static void FillFromText(WikipediaImportResult result, List<WikipediaText.Section> sections, bool genus)
     {
         if (result.Habitat is null || result.RangeRegion is null)
         {
@@ -295,12 +297,13 @@ public class WikipediaImporter
             result.RangeRegion ??= range;
         }
 
-        if (result.ScientificName is null || !result.ScientificName.Trim().Contains(' '))
+        var species = result.ScientificName is not null && result.ScientificName.Trim().Contains(' ');
+        if (!species && !genus)
         {
             return;
         }
 
-        if (result.SizeLengthCmMin is null && result.SizeLengthCmMax is null)
+        if (species && result.SizeLengthCmMin is null && result.SizeLengthCmMax is null)
         {
             var length = WikipediaText.FindMeasurement(sections, WikipediaText.Quantity.Length);
             if (length is not null)
@@ -310,7 +313,7 @@ public class WikipediaImporter
             }
         }
 
-        if (result.WeightKgMin is null && result.WeightKgMax is null)
+        if (species && result.WeightKgMin is null && result.WeightKgMax is null)
         {
             var weight = WikipediaText.FindMeasurement(sections, WikipediaText.Quantity.Weight);
             if (weight is not null)
@@ -890,6 +893,8 @@ internal static class WikipediaText
 
     private static readonly Regex MaxOnlyPrefix = new(@"\b(?:up to|as much as|as long as|less than|shorter than|under|below|no more than|a maximum of|not exceeding)\s+(?:about\s+|around\s+|approximately\s+|roughly\s+)?$", Ci);
 
+    private static readonly Regex NegatedMinPrefix = new(@"\b(?:not|never|rarely|seldom)\s+(?:\w+\s+){0,2}(?:longer|more|older)\s+than\s+(?:about\s+|around\s+|approximately\s+|roughly\s+)?$", Ci);
+
     private static readonly Regex MinOnlyPrefix = new(@"(?:\bover|\bmore than|\bat least|\bexceed\w*|\bin excess of|\blonger than|\babove|\bupwards of)\s+(?:about\s+|around\s+|approximately\s+|roughly\s+)?$", Ci);
 
     private static readonly Regex BodyLengthPhrase = new(@"\b(?:head[\s\-–]+and[\s\-–]+body|head[\s\-–]+body|head to tail|from head to tail|tail to beak|from tail to beak|beak to tail|bill to tail|tip to tip|snout[\s\-–]+vent|nose to tail|snout to tail|including (?:the )?tail|total length|body[\s\-]+length)(?: length)?\b", Ci);
@@ -909,6 +914,19 @@ internal static class WikipediaText
     private static readonly Regex OutlierClause = new(@"\b(?:maximum|max|records?|largest|heaviest|longest|biggest|enormous|exceptional\w*|specimens?|fossils?|extinct|other|next|compared|respectively|study|studies|suggested|estimated at)\b", Ci);
 
     private static readonly Regex BirthWords = new(@"\b(?:birth|born|newborns?|hatch\w*|neonat\w*|infants?|juveniles?|immature|young|youngs?|baby|babies|cubs?|calf|calves|pups?|chicks?|kittens?|offspring|tadpoles?|larva\w*|fledg\w*|litters?|gestation\w*|embryo\w*|fetus\w*|foetus\w*|eggs?|wean\w*|metamorph\w*|pregnan\w*|gravid)\b", Ci);
+
+    private static readonly Dictionary<string, int> NumberWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["one"] = 1, ["two"] = 2, ["three"] = 3, ["four"] = 4, ["five"] = 5, ["six"] = 6, ["seven"] = 7, ["eight"] = 8, ["nine"] = 9, ["ten"] = 10,
+        ["eleven"] = 11, ["twelve"] = 12, ["thirteen"] = 13, ["fourteen"] = 14, ["fifteen"] = 15, ["sixteen"] = 16, ["seventeen"] = 17, ["eighteen"] = 18,
+        ["nineteen"] = 19, ["twenty"] = 20, ["thirty"] = 30, ["forty"] = 40, ["fifty"] = 50, ["sixty"] = 60, ["seventy"] = 70, ["eighty"] = 80, ["ninety"] = 90,
+    };
+
+    private const string NumberWord = @"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)";
+
+    private static readonly Regex NumberWordYears = new(
+        $@"(?<![\p{{L}}\-])(?<w>{NumberWord})(?=(?:\s*[–—]\s*|\s+(?:to|or|and)\s+)(?:{NumberWord}|\d+)\s+years?\b|\s+years?\b)(?![\p{{L}}\-])",
+        Ci);
 
     private static readonly Regex MaturityWords = new(@"\b(?:mature|maturity|maturation|matures)\b", Ci);
 
@@ -1107,6 +1125,10 @@ internal static class WikipediaText
         while (text != previous);
         text = BodyLengthPhrase.Replace(text, " bodylength ");
         text = Regex.Replace(text, @"\s+", " ");
+        if (quantity == Quantity.Lifespan)
+        {
+            text = NumberWordYears.Replace(text, m => NumberWords[m.Groups["w"].Value].ToString(CultureInfo.InvariantCulture));
+        }
 
         var clauses = new List<string>();
         foreach (var piece in Regex.Split(text, @";|,\s+|\s+[—–]\s+|—"))
@@ -1215,7 +1237,7 @@ internal static class WikipediaText
                     continue;
                 }
 
-                if (b is null && MaxOnlyPrefix.IsMatch(before))
+                if (b is null && (MaxOnlyPrefix.IsMatch(before) || NegatedMinPrefix.IsMatch(before)))
                 {
                     found.Add((null, high));
                 }
@@ -1317,6 +1339,12 @@ internal static class WikipediaText
                     {
                         range = CleanRange(head);
                     }
+
+                    if (range is null && FindGeographicTail(match.Groups["x"].Value) is { } geography)
+                    {
+                        range = geography.Range;
+                        habitat ??= geography.Habitat;
+                    }
                 }
             }
 
@@ -1339,6 +1367,29 @@ internal static class WikipediaText
                 break;
             }
         }
+        return (habitat, range);
+    }
+
+    private static readonly Regex GeographicTail = new(
+        @"^(?<h>.*?)\s+(?:in|off|throughout|across|along|around)\s+(?:the\s+)?(?<t>\p{Lu}[\p{L}'\-]*(?:\s+(?:and|of|\p{Lu}[\p{L}'\-]*))*)(?<ft>,?\s+from\s+(?:the\s+)?\p{Lu}[\p{L}'\-]*(?:\s+\p{Lu}[\p{L}'\-]*)*\s+to\s+(?:the\s+)?\p{Lu}[\p{L}'\-]*(?:\s+\p{Lu}[\p{L}'\-]*)*)?");
+
+    private static (string? Habitat, string Range)? FindGeographicTail(string phrase)
+    {
+        var clause = Regex.Split(phrase, @";|:|\.\s|\.$|,\s*(?:where|which|but|although|though|while|whereas|and|it|they)\b|\s+(?:where|which|that|because|although|though|while|whereas|but)\s", Ci)[0];
+        var match = GeographicTail.Match(clause);
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        var range = CleanRange(match.Groups["t"].Value + match.Groups["ft"].Value);
+        if (range is null || !Regex.IsMatch(match.Groups["t"].Value, @"^\p{Lu}"))
+        {
+            return null;
+        }
+
+        var place = Regex.Match(match.Groups["h"].Value, @"\b(?:in|on|among|amid)\s+(?<p>[^\p{Lu},;]+)$");
+        var habitat = place.Success ? CleanHabitat(Regex.Replace(place.Groups["p"].Value, @"\s+and\s+also\s+", " and ", Ci)) : null;
         return (habitat, range);
     }
 

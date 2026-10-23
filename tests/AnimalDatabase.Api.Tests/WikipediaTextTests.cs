@@ -194,4 +194,53 @@ public class WikipediaTextTests
 
         Assert.Null(FindFunFact(sections, lead));
     }
+
+    [Theory]
+    [InlineData("The octopus tends to have a lifespan around two to three years.", 2, 3)]
+    [InlineData("In the wild they live for about twelve years.", 12, 12)]
+    [InlineData("Their life expectancy is between ten and fifteen years.", 10, 15)]
+    public void Lifespans_written_in_words_are_read(string text, double min, double max)
+    {
+        var result = Measure(text, Quantity.Lifespan);
+
+        Assert.NotNull(result);
+        Assert.Equal((decimal)min, result.Value.Min);
+        Assert.Equal((decimal)max, result.Value.Max);
+    }
+
+    [Theory]
+    [InlineData("A twenty-five year study followed the colony.")]
+    [InlineData("They form groups of two to three animals.")]
+    [InlineData("The ten-year-old specimen was found in a cave.")]
+    public void Number_words_without_years_give_no_lifespan(string text)
+    {
+        Assert.Null(Measure(text, Quantity.Lifespan));
+    }
+
+    [Fact]
+    public void Number_words_are_not_read_as_lengths()
+    {
+        Assert.Null(Measure("Adults grow two to three metres long.", Quantity.Length));
+    }
+
+    [Fact]
+    public void A_negated_lower_bound_gives_a_maximum()
+    {
+        var result = Measure("In the wild, capybaras usually do not live longer than four years because of predation.", Quantity.Lifespan);
+
+        Assert.NotNull(result);
+        Assert.Null(result.Value.Min);
+        Assert.Equal(4m, result.Value.Max);
+    }
+
+    [Fact]
+    public void Range_is_read_from_the_end_of_a_long_habitat_phrase()
+    {
+        var sections = new List<Section> { new(string.Empty, "Blue-ringed octopuses are four extremely venomous species of octopus that can be found in shells between rocks and crevices in tide pools and also coral reefs in the Pacific and Indian Oceans, from Japan to Australia.") };
+
+        var (habitat, range) = FindHabitatAndRange(sections);
+
+        Assert.Equal("Tide pools and coral reefs", habitat);
+        Assert.Equal("Pacific and Indian Oceans, from Japan to Australia", range);
+    }
 }

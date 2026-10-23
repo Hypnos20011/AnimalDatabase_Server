@@ -286,4 +286,24 @@ public class WikipediaFieldTests
 
         Assert.False(WikipediaImporter.IsPhoto(info));
     }
+
+    [Fact]
+    public async Task Blue_ringed_octopus_genus_gets_lifespan_habitat_and_range_but_no_sizes()
+    {
+        var (importer, handler) = TestImporter.Create();
+
+        var result = await importer.ImportByNameAsync("blue-ringed octopus");
+
+        Assert.NotNull(result);
+        Assert.Equal("Hapalochlaena", result.ScientificName);
+        Assert.Equal(2, result.LifespanYearsMin);
+        Assert.Equal(3, result.LifespanYearsMax);
+        Assert.Equal("Tide pools and coral reefs", result.Habitat);
+        Assert.Equal("Pacific and Indian Oceans, from Japan to Australia", result.RangeRegion);
+        Assert.Null(result.SizeLengthCmMin);
+        Assert.Null(result.SizeLengthCmMax);
+        Assert.Null(result.WeightKgMin);
+        Assert.Null(result.WeightKgMax);
+        Assert.Empty(handler.MissingKeys);
+    }
 }

@@ -133,7 +133,18 @@ sudo ufw status verbose
 Docker publishes ports past ufw, which is why only Caddy publishes any; MariaDB and the API have no
 published ports. Optionally also add a Hetzner Cloud Firewall with the same rules (Firewalls -> Create).
 
-Automatic security updates: `sudo apt -y install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades`.
+Automatic security updates: `sudo apt -y install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades`,
+then allow reboots for kernel updates at a quiet hour (server clock is UTC):
+
+```bash
+printf '%s\n' 'Unattended-Upgrade::Automatic-Reboot "true";' 'Unattended-Upgrade::Automatic-Reboot-WithUsers "true";' \
+  'Unattended-Upgrade::Automatic-Reboot-Time "03:30";' | sudo tee /etc/apt/apt.conf.d/52unattended-upgrades-reboot
+sudo unattended-upgrade --dry-run --debug
+```
+
+Only the Ubuntu origins in `50unattended-upgrades` (release, `-security`, ESM security) are upgraded; Docker's own
+repository is not in that list, so docker is never restarted by it (update it by hand). After a reboot every
+compose service comes back (`restart: unless-stopped`, docker enabled at boot), and so does the watchdog timer.
 
 ### 4. Install Docker
 
@@ -281,6 +292,24 @@ docker compose exec backup bash /usr/local/bin/backup.sh now
 docker compose exec backup ls -lh /backups
 docker compose logs backup
 ```
+
+Restore test (passed 2026-10-23): load the newest dump into a throwaway container with no network and a tmpfs
+data dir, compare with live, then remove it. The live database is not touched.
+
+```bash
+PW=$(openssl rand -hex 16)
+docker run -d --name adb-restore-test --network none --memory 300m --tmpfs /var/lib/mysql:rw,size=200m \
+  -e MARIADB_ROOT_PASSWORD="$PW" mariadb:11.8 --innodb-buffer-pool-size=32M
+F=$(ls -1t /opt/animaldatabase/backups/*.sql.gz | head -n1)
+zcat "$F" | docker exec -i -e MYSQL_PWD="$PW" adb-restore-test mariadb -uroot
+docker exec -e MYSQL_PWD="$PW" adb-restore-test mariadb -uroot animaldatabase \
+  -e "SELECT COUNT(*) FROM animals; SELECT COUNT(*) FROM animal_images; SELECT COUNT(*) FROM searches"
+docker rm -f -v adb-restore-test
+```
+
+Result on 2026-10-23: no errors; tables `animals`, `animal_images`, `searches` all present; 18 / 18 / 98 rows,
+the same as live; Axolotl (11), Blobfish (22) and Greater blue-ringed octopus (27) match the live API, and an
+MD5 over all `animals` and `animal_images` rows is identical to live.
 
 ### Copies on the PC's SSD
 

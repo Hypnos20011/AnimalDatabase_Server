@@ -4,7 +4,7 @@ using AnimalDatabase.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<AnimalRepository>();
-builder.Services.AddSingleton<SearchRepository>();
+builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
 builder.Services.AddHttpClient<WikipediaImporter>(client =>
 {
     client.DefaultRequestHeaders.UserAgent.ParseAdd("AnimalDatabase/1.0 (https://github.com/Hypnos20011/AnimalDatabase_Server; personal hobby project)");

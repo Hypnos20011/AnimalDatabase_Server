@@ -4,7 +4,7 @@ using MySqlConnector;
 
 namespace AnimalDatabase.Api.Data;
 
-public class SearchRepository
+public class SearchRepository : ISearchRepository
 {
     private readonly string _connectionString;
 
@@ -26,7 +26,7 @@ public class SearchRepository
         return affected > 0;
     }
 
-    public async Task<IReadOnlyList<TopSearch>> GetTopAsync(int limit)
+    public async Task<IReadOnlyList<TopSearch>> GetTopAsync(int limit, int? days)
     {
         await using var connection = new MySqlConnection(_connectionString);
         var rows = await connection.QueryAsync<TopSearch>(
@@ -38,11 +38,12 @@ public class SearchRepository
                 COUNT(*) AS search_count
             FROM searches s
             JOIN animals a ON a.id = s.animal_id
+            WHERE @Days IS NULL OR s.searched_at >= NOW() - INTERVAL @Days DAY
             GROUP BY a.id, a.common_name
             ORDER BY search_count DESC, a.common_name
             LIMIT @Limit;
             """,
-            new { Limit = limit });
+            new { Limit = limit, Days = days });
         return rows.ToList();
     }
-}
+}

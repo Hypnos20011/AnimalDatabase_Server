@@ -8,9 +8,12 @@ namespace AnimalDatabase.Api.Controllers;
 [Route("api/searches")]
 public class SearchesController : ControllerBase
 {
-    private readonly SearchRepository _repository;
+    public const int DefaultTopDays = 30;
+    public const int MaxTopDays = 365;
 
-    public SearchesController(SearchRepository repository)
+    private readonly ISearchRepository _repository;
+
+    public SearchesController(ISearchRepository repository)
     {
         _repository = repository;
     }
@@ -27,9 +30,16 @@ public class SearchesController : ControllerBase
     }
 
     [HttpGet("top")]
-    public async Task<ActionResult<IReadOnlyList<TopSearch>>> GetTop([FromQuery] int limit = 5)
+    public async Task<ActionResult<IReadOnlyList<TopSearch>>> GetTop(
+        [FromQuery] int limit = 5,
+        [FromQuery] int days = DefaultTopDays)
     {
-        var top = await _repository.GetTopAsync(Math.Clamp(limit, 1, 20));
+        if (days < 0 || days > MaxTopDays)
+        {
+            return BadRequest($"days must be between 1 and {MaxTopDays}, or 0 for all time.");
+        }
+
+        var top = await _repository.GetTopAsync(Math.Clamp(limit, 1, 20), days == 0 ? null : days);
         return Ok(top);
     }
 }

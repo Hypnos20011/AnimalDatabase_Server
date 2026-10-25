@@ -24,4 +24,8 @@
     <InternalsVisibleTo Include="AnimalDatabase.Api.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data/Reference/anage_data.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

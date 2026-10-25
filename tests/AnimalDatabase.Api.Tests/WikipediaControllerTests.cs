@@ -1,6 +1,7 @@
 using AnimalDatabase.Api.Controllers;
 using AnimalDatabase.Api.Models;
 using Microsoft.AspNetCore.Mvc;
+using AnimalDatabase.Api.Services;
 
 namespace AnimalDatabase.Api.Tests;
 
@@ -9,7 +10,8 @@ public class WikipediaControllerTests
     private static (WikipediaController Controller, FixtureHttpHandler Handler) Create()
     {
         var (importer, handler) = TestImporter.Create();
-        return (new WikipediaController(importer), handler);
+        var anAge = new AnAgeSource(Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt"));
+        return (new WikipediaController(importer, anAge), handler);
     }
 
     [Fact]
@@ -96,5 +98,17 @@ public class WikipediaControllerTests
 
         var result = Assert.IsType<ObjectResult>(response.Result);
         Assert.Equal(504, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Okapi_keeps_wikipedia_lifespan_over_anage()
+    {
+        var (controller, handler) = Create();
+        
+        var response = await controller.Import("okapi");
+
+        var ok = Assert.IsType<OkObjectResult>(response.Result);
+        var result = Assert.IsType<WikipediaImportResult>(ok.Value);
+        Assert.Equal<int?>(30, result.LifespanYearsMax);
     }
 }

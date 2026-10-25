@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<AnimalRepository>();
 builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
+builder.Services.AddSingleton(new AnAgeSource(Path.Combine(
+    AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt")));
 builder.Services.AddHttpClient<WikipediaImporter>(client =>
 {
     client.DefaultRequestHeaders.UserAgent.ParseAdd("AnimalDatabase/1.0 (https://github.com/Hypnos20011/AnimalDatabase_Server; personal hobby project)");

@@ -12,10 +12,12 @@ namespace AnimalDatabase.Api.Controllers;
 public class WikipediaController : ControllerBase
 {
     private readonly WikipediaImporter _importer;
+    private readonly AnAgeSource _anAge;
 
-    public WikipediaController(WikipediaImporter importer)
+    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge)
     {
         _importer = importer;
+        _anAge = anAge;
     }
 
     [HttpGet("import")]
@@ -43,6 +45,16 @@ public class WikipediaController : ControllerBase
             {
                 return NotFound("Couldn't find a Wikipedia article for that.");
             }
+
+            if (result.ScientificName is not null)
+            {
+                var traits = _anAge.Find(result.ScientificName);
+                if (traits is not null)
+                {
+                    TraitMerger.FillMissing(result, traits);
+                }
+            }
+            
             return Ok(result);
         }
         catch (HttpRequestException)

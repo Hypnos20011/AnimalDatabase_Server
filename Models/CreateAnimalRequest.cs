@@ -42,7 +42,7 @@ public class CreateAnimalRequest
     [Range(0, int.MaxValue)]
     public int? LifespanYearsMax { get; set; }
 
-    [MaxLength(40)]
+    [MaxLength(40), AllowedValues("least concern", "near threatened", "vulnerable", "endangered", "critically endangered", "extinct in the wild", "extinct", "data deficient", null)]
     public string? IucnStatus { get; set; }
 
     [MaxLength(255)]

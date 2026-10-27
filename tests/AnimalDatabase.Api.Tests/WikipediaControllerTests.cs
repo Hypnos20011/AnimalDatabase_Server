@@ -11,7 +11,10 @@ public class WikipediaControllerTests
     {
         var (importer, handler) = TestImporter.Create();
         var anAge = new AnAgeSource(Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt"));
-        return (new WikipediaController(importer, anAge), handler);
+var sealife = new SeaLifeBaseSource(
+Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "sealifebase_data.txt"),
+Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "fishbase_data.txt"));
+        return (new WikipediaController(importer, anAge, sealife), handler);
     }
 
     [Fact]

@@ -13,11 +13,13 @@ public class WikipediaController : ControllerBase
 {
     private readonly WikipediaImporter _importer;
     private readonly AnAgeSource _anAge;
+    private readonly SeaLifeBaseSource _seaLifeBase;
 
-    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge)
+    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge, SeaLifeBaseSource seaLifeBase)
     {
         _importer = importer;
         _anAge = anAge;
+        _seaLifeBase = seaLifeBase;
     }
 
     [HttpGet("import")]
@@ -52,6 +54,12 @@ public class WikipediaController : ControllerBase
                 if (traits is not null)
                 {
                     TraitMerger.FillMissing(result, traits);
+                }
+                
+                var seaTraits = _seaLifeBase.Find(result.ScientificName);
+                if (seaTraits is not null)
+                {
+                    TraitMerger.FillMissing(result, seaTraits);
                 }
             }
             

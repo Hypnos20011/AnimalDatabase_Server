@@ -71,6 +71,16 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
     {
         var query = HttpUtility.ParseQueryString(uri.Query);
 
+        if (uri.Host.Equals("eol.org", StringComparison.OrdinalIgnoreCase))
+        {
+            if (uri.AbsolutePath.StartsWith("/api/search/", StringComparison.Ordinal))
+            {
+                return "eol-search/" + Clean(query["q"] ?? string.Empty);
+            }
+
+            return "eol-page/" + Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+        }
+
         if (uri.Host.Equals("query.wikidata.org", StringComparison.OrdinalIgnoreCase))
         {
             var qid = Regex.Match(query["query"] ?? string.Empty, @"wd:(Q\d+)").Groups[1].Value;

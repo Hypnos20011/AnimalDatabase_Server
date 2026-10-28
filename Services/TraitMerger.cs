@@ -13,11 +13,19 @@ public static class TraitMerger
             traits.SizeLengthCmMax
         );
 
-        (result.WeightKgMin, result.WeightKgMax) = MergePair(result.WeightKgMin, result.WeightKgMax, traits.WeightKgMin,
-            traits.WeightKgMax);
+        (result.WeightKgMin, result.WeightKgMax) = MergePair(
+            result.WeightKgMin,
+            result.WeightKgMax,
+            traits.WeightKgMin,
+            traits.WeightKgMax
+        );
 
-        (result.LifespanYearsMin, result.LifespanYearsMax) = MergePair(result.LifespanYearsMin, result.LifespanYearsMax,
-            traits.LifespanYearsMin, traits.LifespanYearsMax);
+        (result.LifespanYearsMin, result.LifespanYearsMax) = MergePair(
+            result.LifespanYearsMin,
+            result.LifespanYearsMax,
+            traits.LifespanYearsMin,
+            traits.LifespanYearsMax
+        );
 
         result.Habitat ??= traits.Habitat;
     }

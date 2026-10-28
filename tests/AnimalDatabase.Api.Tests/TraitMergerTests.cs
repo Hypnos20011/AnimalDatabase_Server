@@ -30,7 +30,7 @@ public class TraitMergerTests
     }
 
     [Fact]
-    public void Checking_if_traitmerger_works()
+    public void Fills_missing_max_when_min_exists()
     {
         var result = new WikipediaImportResult { LifespanYearsMin = 10 };
         var traits = new TraitData { LifespanYearsMax = 31 };

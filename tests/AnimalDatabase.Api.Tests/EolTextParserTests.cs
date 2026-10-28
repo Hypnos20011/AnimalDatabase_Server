@@ -35,4 +35,22 @@ public class EolTextParserTests
         Assert.Null(traits.SizeLengthCmMin);
         Assert.Null(traits.SizeLengthCmMax);
     }
+
+    [Fact]
+    public void Reads_lifespan_range()
+    {
+        var traits = EolTextParser.Parse("<strong>Range lifespan<br><span>Status: captivity</span>:</strong> 22 to 31 years.");
+
+        Assert.Equal(22, traits.LifespanYearsMin);
+        Assert.Equal(31, traits.LifespanYearsMax);
+    }
+
+    [Fact]
+    public void Proving_wild_wins_over_captivity()
+    {
+        var traits = EolTextParser.Parse("<strong>Range lifespan<br><span>Status: captivity</span>:</strong> 22 to 31 years.<strong>Range lifespan<br><span>Status: wild</span>:</strong> 8 (high) years.");
+
+        Assert.Null(traits.LifespanYearsMin);
+        Assert.Equal(8, traits.LifespanYearsMax);
+    }
 }

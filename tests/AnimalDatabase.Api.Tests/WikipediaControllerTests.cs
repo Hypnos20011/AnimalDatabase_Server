@@ -11,13 +11,13 @@ public class WikipediaControllerTests
     private static (WikipediaController Controller, FixtureHttpHandler Handler) Create()
     {
         var (importer, handler) = TestImporter.Create();
-        var anAge = new AnAgeSource(Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt"));
-var sealife = new SeaLifeBaseSource(
-Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "sealifebase_data.txt"),
-Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "fishbase_data.txt"));
-var eol = new EolClient(new HttpClient(handler));
-
-return (new WikipediaController(importer, anAge, sealife, eol), handler);
+        var anAge = new AnAgeSource(Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt")); 
+        var sealife = new SeaLifeBaseSource( 
+            Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "sealifebase_data.txt"), 
+            Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "fishbase_data.txt")); 
+        var eol = new EolClient(new HttpClient(handler));
+        
+        return (new WikipediaController(importer, anAge, sealife, eol), handler);
     }
 
     [Fact]
@@ -126,5 +126,30 @@ return (new WikipediaController(importer, anAge, sealife, eol), handler);
         var response = await controller.Import("okapi");
         
         Assert.IsType<OkObjectResult>(response.Result);
+    }
+    
+    [Fact]
+    public async Task Shoebill_gets_lifespan_from_eol_when_anage_has_none()
+    {
+        var realAnAge = Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt");
+        var emptyAnAge = Path.GetTempFileName();
+        File.WriteAllLines(emptyAnAge, File.ReadLines(realAnAge).Take(1));
+
+        var (importer, handler) = TestImporter.Create();
+        handler.Override("eol-search/Balaeniceps_rex", """{"results":[{"id":3}]}""");
+        handler.Override("eol-page/3", """{"taxonConcept":{"dataObjects":[{"description":"<strong>Range lifespan<br><span>Status: captivity</span>:</strong> 22 to 31 years.<strong>Range lifespan<br><span>Status: wild</span>:</strong> 8 (high) years."}]}}""");
+
+        var anAge = new AnAgeSource(emptyAnAge);
+        var sealife = new SeaLifeBaseSource( 
+            Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "sealifebase_data.txt"), 
+            Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "fishbase_data.txt"));
+        var eol = new EolClient(new HttpClient(handler));
+        var controller = new WikipediaController(importer, anAge, sealife, eol);
+
+        var response = await controller.Import("shoebill");
+
+        var ok = Assert.IsType<OkObjectResult>(response.Result);
+        var result = Assert.IsType<WikipediaImportResult>(ok.Value);
+        Assert.Equal<int?>(8, result.LifespanYearsMax);
     }
 }

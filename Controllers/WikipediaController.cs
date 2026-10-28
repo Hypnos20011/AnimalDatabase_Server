@@ -66,7 +66,8 @@ public class WikipediaController : ControllerBase
 
                 var missingLength = result.SizeLengthCmMin is null && result.SizeLengthCmMax is null;
                 var missingWeight = result.WeightKgMin is null && result.WeightKgMax is null;
-                if (missingLength || missingWeight)
+                var missingLifespan = result.LifespanYearsMin is null && result.LifespanYearsMax is null;
+                if (missingLength || missingWeight || missingLifespan)
                 {
                     var rangeText = await _eol.FindRangeTextAsync(result.ScientificName);
                     if (rangeText is not null)

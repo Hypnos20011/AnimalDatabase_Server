@@ -30,9 +30,9 @@ public class EolClient
                     if (empty) break;
                 }
             }
-
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException
+                                       or KeyNotFoundException)
         {
             return null;
         }
@@ -42,7 +42,8 @@ public class EolClient
 
     private async Task<(string? Text, bool Empty)> ReadPageAsync(int id, int textsPage)
     {
-        var pageUrl = $"https://eol.org/api/pages/1.0/{id}.json?details=true&texts_per_page=75&texts_page={textsPage}&images_per_page=0";
+        var pageUrl =
+            $"https://eol.org/api/pages/1.0/{id}.json?details=true&texts_per_page=75&texts_page={textsPage}&images_per_page=0";
         using var page = JsonDocument.Parse(await _http.GetStringAsync(pageUrl));
         if (!page.RootElement.GetProperty("taxonConcept").TryGetProperty("dataObjects", out var objects))
             return (null, true);
@@ -51,7 +52,8 @@ public class EolClient
         {
             if (!item.TryGetProperty("description", out var description)) continue;
             var text = description.GetString();
-            if (text is not null && (text.Contains("Range mass") || text.Contains("Range length"))) return (text, false);
+            if (text is not null && (text.Contains("Range mass") || text.Contains("Range length") ||
+                                     text.Contains("Range lifespan"))) return (text, false);
         }
 
         return (null, objects.GetArrayLength() == 0);

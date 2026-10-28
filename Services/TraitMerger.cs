@@ -6,24 +6,43 @@ public static class TraitMerger
 {
     public static void FillMissing(WikipediaImportResult result, TraitData traits)
     {
-        if (result.SizeLengthCmMin is null && result.SizeLengthCmMax is null)
-        {
-            result.SizeLengthCmMin = traits.SizeLengthCmMin;
-            result.SizeLengthCmMax = traits.SizeLengthCmMax;
-        }
+        (result.SizeLengthCmMin, result.SizeLengthCmMax) = MergePair(
+            result.SizeLengthCmMin,
+            result.SizeLengthCmMax,
+            traits.SizeLengthCmMin,
+            traits.SizeLengthCmMax
+        );
 
-        if (result.WeightKgMax is null && result.WeightKgMin is null)
-        {
-            result.WeightKgMin = traits.WeightKgMin;
-            result.WeightKgMax = traits.WeightKgMax;
-        }
+        (result.WeightKgMin, result.WeightKgMax) = MergePair(result.WeightKgMin, result.WeightKgMax, traits.WeightKgMin,
+            traits.WeightKgMax);
 
-        if (result.LifespanYearsMax is null && result.LifespanYearsMin is null)
-        {
-            result.LifespanYearsMin = traits.LifespanYearsMin;
-            result.LifespanYearsMax = traits.LifespanYearsMax;
-        }
+        (result.LifespanYearsMin, result.LifespanYearsMax) = MergePair(result.LifespanYearsMin, result.LifespanYearsMax,
+            traits.LifespanYearsMin, traits.LifespanYearsMax);
 
         result.Habitat ??= traits.Habitat;
+    }
+
+    private static (int? Min, int? Max) MergePair(int? existingMin, int? existingMax,
+        int? sourceMin, int? sourceMax)
+    {
+        return (existingMin, existingMax) switch
+        {
+            (null, null) => (sourceMin, sourceMax),
+            (not null, null) when sourceMax >= existingMin => (existingMin, sourceMax),
+            (null, not null) when sourceMin <= existingMax => (sourceMin, existingMax),
+            _ => (existingMin, existingMax)
+        };
+    }
+
+    private static (decimal? min, decimal? max) MergePair(decimal? existingMin, decimal? existingMax,
+        decimal? sourceMin, decimal? sourceMax)
+    {
+        return (existingMin, existingMax) switch
+        {
+            (null, null) => (sourceMin, sourceMax),
+            (not null, null) when sourceMax >= existingMin => (existingMin, sourceMax),
+            (null, not null) when sourceMin <= existingMax => (sourceMin, existingMax),
+            _ => (existingMin, existingMax)
+        };
     }
 }

@@ -18,14 +18,25 @@ public class TraitMergerTests
     }
 
     [Fact]
-    public void Does_not_mix_a_range_from_two_sources()
+    public void Does_not_fit_into_blank_fields()
     {
         var result = new WikipediaImportResult { WeightKgMin = 1.3m };
-        var traits = new TraitData {WeightKgMax =  1.5m};
+        var traits = new TraitData {WeightKgMax =  1.1m};
         
         TraitMerger.FillMissing(result, traits);
 
         Assert.Equal(1.3m, result.WeightKgMin);
         Assert.Null(result.WeightKgMax);
+    }
+
+    [Fact]
+    public void Checking_if_traitmerger_works()
+    {
+        var result = new WikipediaImportResult { LifespanYearsMin = 10 };
+        var traits = new TraitData { LifespanYearsMax = 31 };
+        
+        TraitMerger.FillMissing(result, traits);
+
+        Assert.Equal(31, result.LifespanYearsMax);
     }
 }

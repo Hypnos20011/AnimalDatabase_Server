@@ -27,4 +27,12 @@ public class AnAgeSourceTests
         Assert.Null(Source().Find("Macrocheira kaempferi"));
         Assert.Null(Source().Find("vulp"));
     }
+
+    [Fact]
+    public void Find_naked_mole_rat()
+    {
+        var traits = Source().Find("Heterocephalus glaber");
+        Assert.NotNull(traits);
+        Assert.Equal(31, traits.LifespanYearsMax);
+    }
 }

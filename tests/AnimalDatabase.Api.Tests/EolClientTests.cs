@@ -1,5 +1,5 @@
 ﻿using AnimalDatabase.Api.Services;
-
+using System.Net;
 
 namespace AnimalDatabase.Api.Tests;
 
@@ -28,5 +28,51 @@ public class EolClientTests
         var text = await client.FindRangeTextAsync("Nonexistus animalus");
         
         Assert.Null(text);
+    }
+
+    [Fact]
+    public async Task Tries_the_next_result_when_the_first_page_is_empty()
+    {
+        var (client, handler) = Create();
+        handler.Override("eol-search/Testus_animalus", """{"results":[{"id":1},{"id":2}]}""");
+        handler.Override("eol-page/1", """{"taxonConcept":{"dataObjects":[]}}""");
+        handler.Override("eol-page/2",
+            """{"taxonConcept":{"dataObjects":[{"description":"<strong>Range mass:</strong> 5 kg"}]}}""");
+        
+        var text = await client.FindRangeTextAsync("Testus animalus");
+
+        Assert.NotNull(text);
+    }
+
+    [Fact]
+    public async Task Reads_the_second_texts_page()
+    {
+        var (client, handler) = Create();
+        handler.Override("eol-search/Testus_animalus", """{"results":[{"id":3}]}""");
+        handler.Override("eol-page/3", """{"taxonConcept":{"dataObjects":[{"description":"Lives in rivers."}]}}""");
+        handler.Override("eol-page/3-p2",
+            """{"taxonConcept":{"dataObjects":[{"description":"<strong>Range length:</strong> 40 cm"}]}}""");
+        
+        var text = await client.FindRangeTextAsync("Testus animalus");
+        
+        Assert.Contains("Range length", text);
+    }
+    
+    [Fact]
+    public async Task Returns_null_when_eol_has_a_server_error()
+    {
+        var (client, handler) = Create();
+        handler.FailNext("eol-search/Macrocheira_kaempferi", HttpStatusCode.InternalServerError);
+        
+        Assert.Null(await client.FindRangeTextAsync("Macrocheira kaempferi"));
+    }
+
+    [Fact]
+    public async Task Returns_null_when_eol_times_out()
+    {
+        var (client, handler) = Create();
+        handler.Failure = new TaskCanceledException();
+        
+        Assert.Null(await client.FindRangeTextAsync("Macrocheira kaempferi"));
     }
 }

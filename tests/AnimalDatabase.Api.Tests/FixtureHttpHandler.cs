@@ -78,7 +78,8 @@ public sealed class FixtureHttpHandler : HttpMessageHandler
                 return "eol-search/" + Clean(query["q"] ?? string.Empty);
             }
 
-            return "eol-page/" + Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+            var textsPage = query["texts_page"];
+            return "eol-page/" + Path.GetFileNameWithoutExtension(uri.AbsolutePath) + (textsPage is null or "1" ? "" : "-p" + textsPage);
         }
 
         if (uri.Host.Equals("query.wikidata.org", StringComparison.OrdinalIgnoreCase))

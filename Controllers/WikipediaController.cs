@@ -14,12 +14,14 @@ public class WikipediaController : ControllerBase
     private readonly WikipediaImporter _importer;
     private readonly AnAgeSource _anAge;
     private readonly SeaLifeBaseSource _seaLifeBase;
+    private readonly EolClient _eol;
 
-    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge, SeaLifeBaseSource seaLifeBase)
+    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge, SeaLifeBaseSource seaLifeBase,  EolClient eol)
     {
         _importer = importer;
         _anAge = anAge;
         _seaLifeBase = seaLifeBase;
+        _eol = eol;
     }
 
     [HttpGet("import")]
@@ -60,6 +62,17 @@ public class WikipediaController : ControllerBase
                 if (seaTraits is not null)
                 {
                     TraitMerger.FillMissing(result, seaTraits);
+                }
+
+                var missingLength = result.SizeLengthCmMin is null && result.SizeLengthCmMax is null;
+                var missingWeight = result.WeightKgMin is null && result.WeightKgMax is null;
+                if (missingLength || missingWeight)
+                {
+                    var rangeText = await _eol.FindRangeTextAsync(result.ScientificName);
+                    if (rangeText is not null)
+                    {
+                        TraitMerger.FillMissing(result, EolTextParser.Parse(rangeText));
+                    }
                 }
             }
             

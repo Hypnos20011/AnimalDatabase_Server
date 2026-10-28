@@ -18,6 +18,13 @@ builder.Services.AddHttpClient<WikipediaImporter>(client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
+builder.Services.AddHttpClient<EolClient>(client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "AnimalDatabase/1.0 (https://github.com/Hypnos20011/AnimalDatabase_Server; personal hobby project)");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;

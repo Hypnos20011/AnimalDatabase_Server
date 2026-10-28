@@ -2,6 +2,7 @@ using AnimalDatabase.Api.Controllers;
 using AnimalDatabase.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using AnimalDatabase.Api.Services;
+using System.Net;
 
 namespace AnimalDatabase.Api.Tests;
 
@@ -14,7 +15,9 @@ public class WikipediaControllerTests
 var sealife = new SeaLifeBaseSource(
 Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "sealifebase_data.txt"),
 Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "fishbase_data.txt"));
-        return (new WikipediaController(importer, anAge, sealife), handler);
+var eol = new EolClient(new HttpClient(handler));
+
+return (new WikipediaController(importer, anAge, sealife, eol), handler);
     }
 
     [Fact]
@@ -113,5 +116,15 @@ Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "fishbase_data.txt")
         var ok = Assert.IsType<OkObjectResult>(response.Result);
         var result = Assert.IsType<WikipediaImportResult>(ok.Value);
         Assert.Equal<int?>(30, result.LifespanYearsMax);
+    }
+
+    [Fact]
+    public async Task Import_still_works_when_eol_is_down()
+    {
+        var (controller, handler) = Create();
+        handler.FailNext("eol-search/Okapia_johnstoni", HttpStatusCode.InternalServerError);
+        var response = await controller.Import("okapi");
+        
+        Assert.IsType<OkObjectResult>(response.Result);
     }
 }

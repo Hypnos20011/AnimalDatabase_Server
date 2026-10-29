@@ -20,7 +20,8 @@ public class EolClient
             var searchUrl = $"https://eol.org/api/search/1.0.json?q={Uri.EscapeDataString(scientificName)}&exact=true";
             using var search = JsonDocument.Parse(await _http.GetStringAsync(searchUrl));
 
-            foreach (var result in search.RootElement.GetProperty("results").EnumerateArray().Take(MaxResults))
+            foreach (var result in search.RootElement.GetProperty("results").EnumerateArray()
+                         .OrderByDescending(result => IsExact(result, scientificName)).Take(MaxResults))
             {
                 var id = result.GetProperty("id").GetInt32();
                 for (var textsPage = 1; textsPage <= MaxTextPages; textsPage++)
@@ -38,6 +39,16 @@ public class EolClient
         }
 
         return null;
+    }
+
+    private static bool IsExact(JsonElement result, string scientificName)
+    {
+        if (!result.TryGetProperty("title", out var title))
+        {
+            return false;
+        }
+
+        return string.Equals(scientificName, title.GetString(), StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<(string? Text, bool Empty)> ReadPageAsync(int id, int textsPage)

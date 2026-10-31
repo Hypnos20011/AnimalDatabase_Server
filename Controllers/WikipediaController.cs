@@ -11,12 +11,13 @@ namespace AnimalDatabase.Api.Controllers;
 [Route("api/wikipedia")]
 public class WikipediaController : ControllerBase
 {
-    private readonly WikipediaImporter _importer;
     private readonly AnAgeSource _anAge;
-    private readonly SeaLifeBaseSource _seaLifeBase;
     private readonly EolClient _eol;
+    private readonly WikipediaImporter _importer;
+    private readonly SeaLifeBaseSource _seaLifeBase;
 
-    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge, SeaLifeBaseSource seaLifeBase,  EolClient eol)
+    public WikipediaController(WikipediaImporter importer, AnAgeSource anAge, SeaLifeBaseSource seaLifeBase,
+        EolClient eol)
     {
         _importer = importer;
         _anAge = anAge;
@@ -30,39 +31,26 @@ public class WikipediaController : ControllerBase
     public async Task<ActionResult<WikipediaImportResult>> Import([FromQuery] string q)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length > 300)
-        {
             return BadRequest("Type an animal name or paste a Wikipedia link.");
-        }
 
         try
         {
             var isLink = q.Contains("wikipedia.org", StringComparison.OrdinalIgnoreCase);
             if (isLink && !WikipediaImporter.TryParseUrl(q, out _, out _))
-            {
                 return BadRequest("That isn't a Wikipedia article link.");
-            }
 
             var result = isLink && WikipediaImporter.TryParseUrl(q, out var language, out var title)
                 ? await _importer.ImportAsync(language, title)
                 : await _importer.ImportByNameAsync(q);
-            if (result is null)
-            {
-                return NotFound("Couldn't find a Wikipedia article for that.");
-            }
+            if (result is null) return NotFound("Couldn't find a Wikipedia article for that.");
 
             if (result.ScientificName is not null)
             {
                 var traits = _anAge.Find(result.ScientificName);
-                if (traits is not null)
-                {
-                    TraitMerger.FillMissing(result, traits);
-                }
-                
+                if (traits is not null) TraitMerger.FillMissing(result, traits, "AnAge");
+
                 var seaTraits = _seaLifeBase.Find(result.ScientificName);
-                if (seaTraits is not null)
-                {
-                    TraitMerger.FillMissing(result, seaTraits);
-                }
+                if (seaTraits is not null) TraitMerger.FillMissing(result, seaTraits, "FishBase/SeaLifeBase");
 
                 var missingLength = result.SizeLengthCmMin is null && result.SizeLengthCmMax is null;
                 var missingWeight = result.WeightKgMin is null && result.WeightKgMax is null;
@@ -70,13 +58,10 @@ public class WikipediaController : ControllerBase
                 if (missingLength || missingWeight || missingLifespan)
                 {
                     var rangeText = await _eol.FindRangeTextAsync(result.ScientificName);
-                    if (rangeText is not null)
-                    {
-                        TraitMerger.FillMissing(result, EolTextParser.Parse(rangeText));
-                    }
+                    if (rangeText is not null) TraitMerger.FillMissing(result, EolTextParser.Parse(rangeText), "EOL");
                 }
             }
-            
+
             return Ok(result);
         }
         catch (HttpRequestException)

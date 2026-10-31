@@ -1,31 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>e6cc58ae-99f5-4776-a726-33b7264a530a</UserSecretsId>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>e6cc58ae-99f5-4776-a726-33b7264a530a</UserSecretsId>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.89" />
-    <PackageReference Include="MySqlConnector" Version="2.6.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Dapper" Version="2.1.89"/>
+        <PackageReference Include="MySqlConnector" Version="2.6.2"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.1"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="tests\**" />
-    <Content Remove="tests\**" />
-    <None Remove="tests\**" />
-    <EmbeddedResource Remove="tests\**" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="tests\**"/>
+        <Content Remove="tests\**"/>
+        <None Remove="tests\**"/>
+        <EmbeddedResource Remove="tests\**"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="AnimalDatabase.Api.Tests" />
-  </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="AnimalDatabase.Api.Tests"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Data/Reference/*.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="Data/Reference/*.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+    </ItemGroup>
 
 </Project>

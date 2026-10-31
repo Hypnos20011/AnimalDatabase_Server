@@ -46,4 +46,4 @@ public class SearchRepository : ISearchRepository
             new { Limit = limit, Days = days });
         return rows.ToList();
     }
-}
+}

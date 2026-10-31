@@ -43,10 +43,7 @@ public class EolClient
 
     private static bool IsExact(JsonElement result, string scientificName)
     {
-        if (!result.TryGetProperty("title", out var title))
-        {
-            return false;
-        }
+        if (!result.TryGetProperty("title", out var title)) return false;
 
         return string.Equals(scientificName, title.GetString(), StringComparison.OrdinalIgnoreCase);
     }

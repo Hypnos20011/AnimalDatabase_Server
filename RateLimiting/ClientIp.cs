@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
+using IPNetwork = System.Net.IPNetwork;
 
 namespace AnimalDatabase.Api.RateLimiting;
 
@@ -21,29 +22,23 @@ public static class ClientIp
         options.ForwardLimit = null;
         options.KnownIPNetworks.Clear();
         options.KnownProxies.Clear();
-        options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("127.0.0.0/8"));
-        options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse("::1/128"));
+        options.KnownIPNetworks.Add(IPNetwork.Parse("127.0.0.0/8"));
+        options.KnownIPNetworks.Add(IPNetwork.Parse("::1/128"));
 
-        if (configuration is null)
-        {
-            return;
-        }
+        if (configuration is null) return;
 
         var section = configuration.GetSection(TrustSection);
         foreach (var value in Values(section.GetSection("KnownProxies")))
         {
             if (!IPAddress.TryParse(value, out var proxy))
-            {
                 throw new InvalidOperationException($"{TrustSection}:KnownProxies has an invalid IP address: {value}");
-            }
             options.KnownProxies.Add(Normalize(proxy));
         }
+
         foreach (var value in Values(section.GetSection("KnownNetworks")))
         {
-            if (!System.Net.IPNetwork.TryParse(value, out var network))
-            {
+            if (!IPNetwork.TryParse(value, out var network))
                 throw new InvalidOperationException($"{TrustSection}:KnownNetworks has an invalid network: {value}");
-            }
             options.KnownIPNetworks.Add(network);
         }
     }
@@ -69,19 +64,10 @@ public static class ClientIp
     public static void ApplyCloudflareHeader(HttpContext context)
     {
         var peer = context.Connection.RemoteIpAddress;
-        if (peer is null || !IPAddress.IsLoopback(Normalize(peer)))
-        {
-            return;
-        }
-        if (context.Request.Headers.ContainsKey(ForwardedForHeader))
-        {
-            return;
-        }
+        if (peer is null || !IPAddress.IsLoopback(Normalize(peer))) return;
+        if (context.Request.Headers.ContainsKey(ForwardedForHeader)) return;
         var value = context.Request.Headers[CloudflareHeader].ToString().Trim();
-        if (IPAddress.TryParse(value, out var client))
-        {
-            context.Connection.RemoteIpAddress = client;
-        }
+        if (IPAddress.TryParse(value, out var client)) context.Connection.RemoteIpAddress = client;
     }
 
     public static string PartitionKey(HttpContext context)

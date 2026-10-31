@@ -27,10 +27,7 @@ public class AnimalsController : ControllerBase
     public async Task<ActionResult<Animal>> GetById(int id)
     {
         var animal = await _repository.GetByIdAsync(id);
-        if (animal is null)
-        {
-            return NotFound();
-        }
+        if (animal is null) return NotFound();
         return Ok(animal);
     }
 
@@ -54,10 +51,7 @@ public class AnimalsController : ControllerBase
     public async Task<ActionResult<Animal>> Update(int id, CreateAnimalRequest request)
     {
         var animal = await _repository.UpdateAsync(id, request);
-        if (animal is null)
-        {
-            return NotFound();
-        }
+        if (animal is null) return NotFound();
         return Ok(animal);
     }
 
@@ -66,10 +60,7 @@ public class AnimalsController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _repository.DeleteAsync(id);
-        if (!deleted)
-        {
-            return NotFound();
-        }
+        if (!deleted) return NotFound();
         return NoContent();
     }
 }

@@ -80,7 +80,9 @@ public class EolClientTests
     public async Task Prefers_the_result_with_exact_title()
     {
         var (client, handler) = Create();
-        handler.Override("eol-search/Testus_animalus", """{"results":[{"id":1, "title":"Testus animalus minor"},{"id":2, "title":"Testus animalus major"},{"id":3,"title":"Testus animalus medius"},{"id":4,"title":"Testus animalus"}]}""");
+        handler.Override("eol-search/Testus_animalus", """
+                                                       {"results":[{"id":1, "title":"Testus animalus minor"},{"id":2, "title":"Testus animalus major"},{"id":3,"title":"Testus animalus medius"},{"id":4,"title":"Testus animalus"}]}
+                                                       """);
         handler.Override("eol-page/4", """{"taxonConcept":{"dataObjects":[{"description":"<strong>Range mass:</strong> 5 kg"}]}}""");
         
         var text = await client.FindRangeTextAsync("Testus animalus");

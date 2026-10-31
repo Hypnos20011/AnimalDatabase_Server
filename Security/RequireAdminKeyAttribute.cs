@@ -14,18 +14,16 @@ public sealed class RequireAdminKeyAttribute : Attribute, IAuthorizationFilter
         {
             context.Result = new ObjectResult("Editing is turned off because no admin key is configured.")
             {
-                StatusCode = StatusCodes.Status503ServiceUnavailable,
+                StatusCode = StatusCodes.Status503ServiceUnavailable
             };
             return;
         }
 
         var provided = context.HttpContext.Request.Headers[AdminKey.HeaderName].ToString();
         if (!AdminKey.Matches(configured, provided))
-        {
             context.Result = new ObjectResult("A valid admin key is required.")
             {
-                StatusCode = StatusCodes.Status401Unauthorized,
+                StatusCode = StatusCodes.Status401Unauthorized
             };
-        }
     }
 }

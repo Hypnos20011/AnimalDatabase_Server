@@ -2,12 +2,12 @@
 
 One Docker Compose stack runs the whole site on a single small server:
 
-| Service   | Image                                   | Job                                                                 |
-|-----------|-----------------------------------------|---------------------------------------------------------------------|
-| `caddy`   | `caddy:2`                               | Public entry point on ports 80/443, automatic HTTPS (Let's Encrypt) |
-| `api`     | built from `deploy/Dockerfile`          | ASP.NET Core API plus the Angular site from `wwwroot`, port 8080    |
-| `mariadb` | `mariadb:11.8`                          | Database, only reachable from the `api` and `backup` containers     |
-| `backup`  | `mariadb:11.8`                          | Nightly `mariadb-dump`, gzipped, kept for 14 days                   |
+| Service   | Image                          | Job                                                                 |
+|-----------|--------------------------------|---------------------------------------------------------------------|
+| `caddy`   | `caddy:2`                      | Public entry point on ports 80/443, automatic HTTPS (Let's Encrypt) |
+| `api`     | built from `deploy/Dockerfile` | ASP.NET Core API plus the Angular site from `wwwroot`, port 8080    |
+| `mariadb` | `mariadb:11.8`                 | Database, only reachable from the `api` and `backup` containers     |
+| `backup`  | `mariadb:11.8`                 | Nightly `mariadb-dump`, gzipped, kept for 14 days                   |
 
 The browser only ever talks to one origin (`https://<your domain>`): Angular calls `/api/...`, which is the
 same server, so no CORS is needed in production. `/api/*` and `/swagger/*` are never answered with the
@@ -57,15 +57,15 @@ server and on x86 machines. To build an ARM64 image on an x86 PC:
 
 ### Settings the API reads
 
-| Setting (env var form)                   | Default            | Meaning                                                        |
-|------------------------------------------|--------------------|----------------------------------------------------------------|
-| `ConnectionStrings__AnimalDatabase`      | (none)             | Built by compose from `.env`                                   |
-| `Admin__ApiKey`                          | (none)             | `ADMIN_API_KEY` from `.env`; without it editing is disabled    |
-| `Spa__Enabled` / `Spa__RootPath`         | `true` / `wwwroot` | Serve the Angular build if `index.html` exists there           |
-| `Cors__AllowedOrigins__0`, `__1`, ...    | none (Development: `http://localhost:4200`) | Extra origins allowed to call the API |
-| `ForwardedHeaders__KnownProxies__0`      | none (loopback is always trusted) | Proxy IPs whose `X-Forwarded-For` is trusted     |
-| `ForwardedHeaders__KnownNetworks__0`     | none               | Same, as CIDR ranges                                           |
-| `RateLimiting__*`                        | see appsettings    | Per-IP limits                                                  |
+| Setting (env var form)                | Default                                     | Meaning                                                     |
+|---------------------------------------|---------------------------------------------|-------------------------------------------------------------|
+| `ConnectionStrings__AnimalDatabase`   | (none)                                      | Built by compose from `.env`                                |
+| `Admin__ApiKey`                       | (none)                                      | `ADMIN_API_KEY` from `.env`; without it editing is disabled |
+| `Spa__Enabled` / `Spa__RootPath`      | `true` / `wwwroot`                          | Serve the Angular build if `index.html` exists there        |
+| `Cors__AllowedOrigins__0`, `__1`, ... | none (Development: `http://localhost:4200`) | Extra origins allowed to call the API                       |
+| `ForwardedHeaders__KnownProxies__0`   | none (loopback is always trusted)           | Proxy IPs whose `X-Forwarded-For` is trusted                |
+| `ForwardedHeaders__KnownNetworks__0`  | none                                        | Same, as CIDR ranges                                        |
+| `RateLimiting__*`                     | see appsettings                             | Per-IP limits                                               |
 
 Caddy gets the fixed address `172.30.0.10` (`PROXY_IP`) on the `web` network, and that is the only
 address the API trusts for `X-Forwarded-For`. Caddy replaces any `X-Forwarded-For` sent by the visitor,
@@ -133,7 +133,8 @@ sudo ufw status verbose
 Docker publishes ports past ufw, which is why only Caddy publishes any; MariaDB and the API have no
 published ports. Optionally also add a Hetzner Cloud Firewall with the same rules (Firewalls -> Create).
 
-Automatic security updates: `sudo apt -y install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades`,
+Automatic security updates:
+`sudo apt -y install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades`,
 then allow reboots for kernel updates at a quiet hour (server clock is UTC):
 
 ```bash
@@ -186,8 +187,8 @@ cat ~/.ssh/adb_server.pub
 cat ~/.ssh/adb_ui.pub
 ```
 
-On GitHub add each public key under the matching repository -> Settings -> Deploy keys -> Add deploy key
-(leave "Allow write access" off). Then, with `<github-user>` replaced by the account name:
+On GitHub add each public key under the matching repository -> Settings -> Deploy keys -> Add deploy key (leave "Allow
+write access" off). Then, with `<github-user>` replaced by the account name:
 
 ```bash
 mkdir -p ~/apps && cd ~/apps
@@ -273,18 +274,19 @@ Commit (and push) first, then from PowerShell on the PC:
 D:\AnimalDatabase.Api\deploy\redeploy.ps1
 ```
 
-It archives `master` of both repos, copies the archives over SSH, takes a backup, swaps the folders
-(keeping `.env`), runs `docker compose up -d --build` and prunes old images. Only committed changes are
+It archives `master` of both repos, copies the archives over SSH, takes a backup, swaps the folders (keeping `.env`),
+runs `docker compose up -d --build` and prunes old images. Only committed changes are
 deployed. Options: `-Ref <branch>`, `-SkipBackup`, `-Server deploy@<ip>`, `-UiRepo <path>`.
 
-`schema.sql` is not re-applied to an existing database. Schema changes need an `ALTER TABLE` run by hand
-(see "Database shell" below).
+`schema.sql` is not re-applied to an existing database. Schema changes need an `ALTER TABLE` run by hand (see "Database
+shell" below).
 
 ## Backups and restore
 
 The `backup` service writes `animaldatabase-YYYY-MM-DD_HHMMSS.sql.gz` to the host folder `BACKUP_HOST_DIR`
 (default `../../backups` next to the two repos, on the live server `/opt/animaldatabase/backups`; the files
-are readable by `deploy` without sudo, and the folder survives `redeploy.ps1`) every night at `BACKUP_TIME_UTC` (default 01:30 UTC) and deletes files older than `BACKUP_KEEP_DAYS`
+are readable by `deploy` without sudo, and the folder survives `redeploy.ps1`) every night at `BACKUP_TIME_UTC` (default
+01:30 UTC) and deletes files older than `BACKUP_KEEP_DAYS`
 (default 14).
 
 ```bash

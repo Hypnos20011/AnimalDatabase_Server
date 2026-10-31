@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Cors.Infrastructure;
+
 namespace AnimalDatabase.Api.Hosting;
 
 public static class CorsSetup
@@ -7,7 +9,7 @@ public static class CorsSetup
     public static IServiceCollection AddConfiguredCors(this IServiceCollection services)
     {
         services.AddCors();
-        services.AddOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>().Configure<IConfiguration>((options, config) =>
+        services.AddOptions<CorsOptions>().Configure<IConfiguration>((options, config) =>
         {
             options.AddDefaultPolicy(policy =>
             {

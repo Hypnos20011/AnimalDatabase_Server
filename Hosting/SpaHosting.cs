@@ -17,10 +17,7 @@ public static partial class SpaHosting
     public static string? ResolveRoot(IConfiguration configuration, IWebHostEnvironment environment)
     {
         var settings = configuration.GetSection(SpaSettings.SectionName).Get<SpaSettings>() ?? new SpaSettings();
-        if (!settings.Enabled || string.IsNullOrWhiteSpace(settings.RootPath))
-        {
-            return null;
-        }
+        if (!settings.Enabled || string.IsNullOrWhiteSpace(settings.RootPath)) return null;
 
         var root = Path.GetFullPath(settings.RootPath, environment.ContentRootPath);
         return File.Exists(Path.Combine(root, IndexFile)) ? root : null;
@@ -57,22 +54,18 @@ public static partial class SpaHosting
 
     public static WebApplication MapReservedNotFound(this WebApplication app)
     {
-        foreach (var prefix in ReservedPrefixes)
-        {
-            app.MapFallback(prefix + "/{**path}", NotFound);
-        }
+        foreach (var prefix in ReservedPrefixes) app.MapFallback(prefix + "/{**path}", NotFound);
         return app;
     }
 
-    public static bool IsReserved(PathString path) =>
-        ReservedPrefixes.Any(prefix => path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase));
+    public static bool IsReserved(PathString path)
+    {
+        return ReservedPrefixes.Any(prefix => path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase));
+    }
 
     public static string CacheControlFor(string fileName)
     {
-        if (string.Equals(fileName, IndexFile, StringComparison.OrdinalIgnoreCase))
-        {
-            return IndexCache;
-        }
+        if (string.Equals(fileName, IndexFile, StringComparison.OrdinalIgnoreCase)) return IndexCache;
         return HashedName().IsMatch(fileName) ? HashedAssetCache : OtherAssetCache;
     }
 
@@ -81,11 +74,13 @@ public static partial class SpaHosting
         response.Headers[HeaderNames.CacheControl] = CacheControlFor(fileName);
     }
 
-    private static IResult NotFound(HttpContext context) =>
-        Results.Problem(
+    private static IResult NotFound(HttpContext context)
+    {
+        return Results.Problem(
             statusCode: StatusCodes.Status404NotFound,
             title: "Not Found",
             detail: $"No endpoint matches {context.Request.Method} {context.Request.Path}.");
+    }
 
     [GeneratedRegex(@"-[A-Za-z0-9]{8,}\.[A-Za-z0-9]+$")]
     private static partial Regex HashedName();

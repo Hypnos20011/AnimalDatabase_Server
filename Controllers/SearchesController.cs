@@ -25,10 +25,7 @@ public class SearchesController : ControllerBase
     public async Task<IActionResult> Create(CreateSearchRequest request)
     {
         var added = await _repository.AddAsync(request);
-        if (!added)
-        {
-            return NotFound();
-        }
+        if (!added) return NotFound();
         return NoContent();
     }
 
@@ -38,9 +35,7 @@ public class SearchesController : ControllerBase
         [FromQuery] int days = DefaultTopDays)
     {
         if (days < 0 || days > MaxTopDays)
-        {
             return BadRequest($"days must be between 1 and {MaxTopDays}, or 0 for all time.");
-        }
 
         var top = await _repository.GetTopAsync(Math.Clamp(limit, 1, 20), days == 0 ? null : days);
         return Ok(top);

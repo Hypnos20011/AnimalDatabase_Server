@@ -1,4 +1,5 @@
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.Services;
 using Dapper;
 using MySqlConnector;
 
@@ -171,7 +172,7 @@ public class AnimalRepository
                 INSERT INTO animal_images (animal_id, kind, url, caption, sort_order)
                 VALUES (@AnimalId, @Kind, @Url, @Caption, @SortOrder);
                 """,
-                new { AnimalId = animalId, image.Kind, image.Url, image.Caption, SortOrder = sortOrder++ },
+                new { AnimalId = animalId, image.Kind, Url = WikimediaUrl.Normalize(image.Url), image.Caption, SortOrder = sortOrder++ },
                 transaction);
         }
     }

@@ -32,7 +32,9 @@ public class EolTextParser
         var (lengthMin, lengthMax) = ReadRange(text, "Range length", LengthToCm);
         var (lifeMin, lifeMax) = ReadLifespanRange(text, "wild", LifespanToYears);
         if (lifeMin is null && lifeMax is null)
+        {
             (lifeMin, lifeMax) = ReadLifespanRange(text, "captivity", LifespanToYears);
+        }
 
 
         return new TraitData
@@ -52,13 +54,32 @@ public class EolTextParser
             text,
             label + @":</strong>\s*([\d.,]+)(?:\s*to\s*([\d.,]+))?\s*(?:\((high|low)\))?\s*([a-z]+)"
         );
-        if (!match.Success) return (null, null);
-        if (!units.TryGetValue(match.Groups[4].Value, out var factor)) return (null, null);
+        if (!match.Success)
+        {
+            return (null, null);
+        }
+
+        if (!units.TryGetValue(match.Groups[4].Value, out var factor))
+        {
+            return (null, null);
+        }
 
         var first = ParseNumber(match.Groups[1].Value) * factor;
-        if (match.Groups[2].Success) return (first, ParseNumber(match.Groups[2].Value) * factor);
-        if (match.Groups[3].Value == "low") return (first, null);
-        if (match.Groups[3].Value == "high") return (null, first);
+        if (match.Groups[2].Success)
+        {
+            return (first, ParseNumber(match.Groups[2].Value) * factor);
+        }
+
+        if (match.Groups[3].Value == "low")
+        {
+            return (first, null);
+        }
+
+        if (match.Groups[3].Value == "high")
+        {
+            return (null, first);
+        }
+
         return (first, first);
     }
 
@@ -74,13 +95,32 @@ public class EolTextParser
                                       status +
                                       @"</span>:</strong>\s*([\d.,]+)(?:\s*to\s*([\d.,]+))?\s*(?:\((high|low)\))?\s*([a-z]+)"
         );
-        if (!match.Success) return (null, null);
-        if (!units.TryGetValue(match.Groups[4].Value, out var factor)) return (null, null);
+        if (!match.Success)
+        {
+            return (null, null);
+        }
+
+        if (!units.TryGetValue(match.Groups[4].Value, out var factor))
+        {
+            return (null, null);
+        }
 
         var first = ParseNumber(match.Groups[1].Value) * factor;
-        if (match.Groups[2].Success) return (first, ParseNumber(match.Groups[2].Value) * factor);
-        if (match.Groups[3].Value == "low") return (first, null);
-        if (match.Groups[3].Value == "high") return (null, first);
+        if (match.Groups[2].Success)
+        {
+            return (first, ParseNumber(match.Groups[2].Value) * factor);
+        }
+
+        if (match.Groups[3].Value == "low")
+        {
+            return (first, null);
+        }
+
+        if (match.Groups[3].Value == "high")
+        {
+            return (null, first);
+        }
+
         return (first, first);
     }
 }

@@ -80,7 +80,10 @@ public class AnimalRepository
             "SELECT COUNT(*) FROM animals WHERE id = @Id",
             new { Id = id },
             transaction);
-        if (exists == 0) return null;
+        if (exists == 0)
+        {
+            return null;
+        }
 
         var parameters = ToParameters(request);
         parameters.Add("Id", id);
@@ -162,6 +165,7 @@ public class AnimalRepository
     {
         var sortOrder = 0;
         foreach (var image in images)
+        {
             await connection.ExecuteAsync(
                 """
                 INSERT INTO animal_images (animal_id, kind, url, caption, sort_order)
@@ -169,5 +173,6 @@ public class AnimalRepository
                 """,
                 new { AnimalId = animalId, image.Kind, image.Url, image.Caption, SortOrder = sortOrder++ },
                 transaction);
+        }
     }
 }

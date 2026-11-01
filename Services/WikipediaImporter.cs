@@ -102,13 +102,21 @@ public class WikipediaImporter
     {
         language = "en";
         title = string.Empty;
-        if (!Uri.TryCreate(input.Trim(), UriKind.Absolute, out var uri)) return false;
+        if (!Uri.TryCreate(input.Trim(), UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
 
         var match = Regex.Match(uri.Host, @"^(?:(?<lang>[a-z\-]+)\.)?(?:m\.)?wikipedia\.org$", RegexOptions.IgnoreCase);
-        if (!match.Success || !uri.AbsolutePath.StartsWith("/wiki/", StringComparison.OrdinalIgnoreCase)) return false;
+        if (!match.Success || !uri.AbsolutePath.StartsWith("/wiki/", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
 
         if (match.Groups["lang"].Success && match.Groups["lang"].Value != "www")
+        {
             language = match.Groups["lang"].Value.ToLowerInvariant();
+        }
 
         title = Uri.UnescapeDataString(uri.AbsolutePath["/wiki/".Length..]).Replace('_', ' ');
         return title.Length > 0;
@@ -132,10 +140,16 @@ public class WikipediaImporter
         var encodedTitle = Uri.EscapeDataString(title.Replace(' ', '_'));
         using var summary =
             await GetJsonAsync($"https://{language}.wikipedia.org/api/rest_v1/page/summary/{encodedTitle}");
-        if (summary is null) return null;
+        if (summary is null)
+        {
+            return null;
+        }
 
         var root = summary.RootElement;
-        if (GetString(root, "type") == "disambiguation") return null;
+        if (GetString(root, "type") == "disambiguation")
+        {
+            return null;
+        }
 
         var pageTitle = GetString(root, "title") ?? title;
         var extract = GetString(root, "extract");
@@ -162,7 +176,10 @@ public class WikipediaImporter
         await Task.WhenAll(imageTask, claimsTask, ancestorsTask, articleTask, wikitextTask, imageInfoTask);
 
         var claims = claimsTask.Result;
-        if (claims is not null) await FillFromWikidataAsync(claims.Value, ancestorsTask.Result, result);
+        if (claims is not null)
+        {
+            await FillFromWikidataAsync(claims.Value, ancestorsTask.Result, result);
+        }
 
         var wikitext = wikitextTask.Result;
         var article = articleTask.Result;
@@ -176,11 +193,15 @@ public class WikipediaImporter
                 && infobox.StatusSystem is not null
                 && Regex.IsMatch(infobox.StatusSystem, @"^IUCN\s*3\.1$", RegexOptions.IgnoreCase)
                 && IucnCodes.TryGetValue(infobox.Status, out var statusName))
+            {
                 result.IucnStatus = statusName;
+            }
 
             if (result.Family is null)
+            {
                 result.Family =
                     Truncate(infobox.Family ?? await FindFamilyFromTaxonomyAsync(language, infobox.TaxonomyStart), 120);
+            }
         }
 
         if (english)
@@ -193,7 +214,10 @@ public class WikipediaImporter
                 var caption = WikipediaText.ReadInfobox(wikitext).RangeMapCaption;
                 if (caption is not null && !Regex.IsMatch(caption,
                         @"\b(?:range|ranges|distribution|map|iucn|red|green|blue|native|extant|historic\w*|former)\b",
-                        RegexOptions.IgnoreCase)) result.RangeRegion = WikipediaText.CleanPhrase(caption);
+                        RegexOptions.IgnoreCase))
+                {
+                    result.RangeRegion = WikipediaText.CleanPhrase(caption);
+                }
             }
         }
         else if (result.ScientificName is not null
@@ -225,19 +249,38 @@ public class WikipediaImporter
     {
         var latinTitle = result.ScientificName is not null
                          && result.ScientificName.Equals(pageTitle, StringComparison.OrdinalIgnoreCase);
-        if (!latinTitle) return result.CommonName;
+        if (!latinTitle)
+        {
+            return result.CommonName;
+        }
 
         var candidates = new List<string>();
-        if (wikitext is not null) candidates.AddRange(WikipediaText.BoldLeadNames(wikitext));
-        if (claims is not null) candidates.AddRange(GetEnglishTaxonNames(claims.Value));
+        if (wikitext is not null)
+        {
+            candidates.AddRange(WikipediaText.BoldLeadNames(wikitext));
+        }
+
+        if (claims is not null)
+        {
+            candidates.AddRange(GetEnglishTaxonNames(claims.Value));
+        }
+
         candidates = candidates
             .Where(c => !c.Equals(pageTitle, StringComparison.OrdinalIgnoreCase)
                         && !c.Equals(result.ScientificName, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         var typedKey = NameKey(typed);
-        if (candidates.Any(c => NameKey(c) == typedKey)) return Capitalize(typed);
-        if (candidates.Count > 0) return Capitalize(candidates[0]);
+        if (candidates.Any(c => NameKey(c) == typedKey))
+        {
+            return Capitalize(typed);
+        }
+
+        if (candidates.Count > 0)
+        {
+            return Capitalize(candidates[0]);
+        }
+
         return typed.Equals(pageTitle, StringComparison.OrdinalIgnoreCase) ? result.CommonName : Capitalize(typed);
     }
 
@@ -248,7 +291,10 @@ public class WikipediaImporter
 
     private static IEnumerable<string> GetEnglishTaxonNames(JsonElement claims)
     {
-        if (!claims.TryGetProperty("P1843", out var list)) return [];
+        if (!claims.TryGetProperty("P1843", out var list))
+        {
+            return [];
+        }
 
         return list.EnumerateArray()
             .Where(c => GetString(c, "rank") != "deprecated")
@@ -274,7 +320,10 @@ public class WikipediaImporter
         }
 
         var species = result.ScientificName is not null && result.ScientificName.Trim().Contains(' ');
-        if (!species && !genus) return;
+        if (!species && !genus)
+        {
+            return;
+        }
 
         if (species && result.SizeLengthCmMin is null && result.SizeLengthCmMax is null)
         {
@@ -318,9 +367,11 @@ public class WikipediaImporter
 
         var status = GetItemClaims(claims, "P141").FirstOrDefault();
         if (status is not null)
+        {
             result.IucnStatus = IucnStatuses.TryGetValue(status, out var statusName)
                 ? statusName
                 : await GetStatusFromLabelAsync(status);
+        }
 
         var weights = GetQuantities(claims, "P2067", MassToKg);
         if (weights.Count > 0)
@@ -344,7 +395,10 @@ public class WikipediaImporter
         }
 
         var family = ancestors.FirstOrDefault(a => a.Rank == RankFamily).Name;
-        if (family is not null) result.Family ??= Truncate(family, 120);
+        if (family is not null)
+        {
+            result.Family ??= Truncate(family, 120);
+        }
 
         result.TaxonomicClass = ClassifyTaxa(ancestors.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase));
     }
@@ -364,12 +418,22 @@ public class WikipediaImporter
     internal static string? ClassifyTaxa(HashSet<string> taxa)
     {
         foreach (var (cls, names) in ClassRules)
+        {
             if (names.Any(taxa.Contains))
+            {
                 return cls;
+            }
+        }
 
-        if (taxa.Contains("Sarcopterygii") && !taxa.Contains("Tetrapoda")) return "fish";
+        if (taxa.Contains("Sarcopterygii") && !taxa.Contains("Tetrapoda"))
+        {
+            return "fish";
+        }
 
-        if (taxa.Contains("Animalia") && !taxa.Contains("Vertebrata")) return "invertebrate";
+        if (taxa.Contains("Animalia") && !taxa.Contains("Vertebrata"))
+        {
+            return "invertebrate";
+        }
 
         return null;
     }
@@ -377,11 +441,18 @@ public class WikipediaImporter
     internal static string? ChooseImage(string? pageImage, Dictionary<string, ImageInfo> infos, string? wikitext)
     {
         var leadFile = pageImage is null ? null : FileNameFromUrl(pageImage);
-        if (leadFile is null || !infos.TryGetValue(FileKey(leadFile), out var lead) || IsPhoto(lead)) return pageImage;
+        if (leadFile is null || !infos.TryGetValue(FileKey(leadFile), out var lead) || IsPhoto(lead))
+        {
+            return pageImage;
+        }
 
-        if (wikitext is null) return pageImage;
+        if (wikitext is null)
+        {
+            return pageImage;
+        }
 
         foreach (var file in WikipediaText.ArticleFiles(wikitext))
+        {
             if (infos.TryGetValue(FileKey(file), out var info)
                 && info.Mime == "image/jpeg"
                 && info.Width >= 500
@@ -391,6 +462,7 @@ public class WikipediaImporter
                 var url = info.Width > 1280 && info.ThumbUrl is not null ? info.ThumbUrl : info.Url;
                 return url?.Split('?')[0] ?? pageImage;
             }
+        }
 
         return pageImage;
     }
@@ -398,12 +470,18 @@ public class WikipediaImporter
     internal static bool IsPhoto(ImageInfo info)
     {
         if (info.Mime is "image/svg+xml" or "image/gif" ||
-            info.Title.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)) return false;
+            info.Title.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
 
         var text = $"{info.Title} {info.ObjectName} {info.Description} {info.Categories} {info.Artist}";
         if (Regex.IsMatch(text,
                 @"\b(drawings?|drawn|illustrations?|illustrated|plates?|paintings?|painted|engravings?|engraved|lithograph\w*|woodcuts?|watercolou?rs?|diagrams?|maps?|svg|skeletons?|sketch\w*|artwork|line art|clip ?art|lydekker|bloch|museum specimens?|taxidermy|stamps?|scans? of)\b",
-                RegexOptions.IgnoreCase)) return false;
+                RegexOptions.IgnoreCase))
+        {
+            return false;
+        }
 
         return !Regex.IsMatch(info.Date ?? string.Empty, @"(?<!\d)(1[0-8]\d\d|19[0-4]\d)(?!\d)")
                && !Regex.IsMatch(info.Description ?? string.Empty,
@@ -432,7 +510,9 @@ public class WikipediaImporter
         if (doc is null
             || !doc.RootElement.TryGetProperty("query", out var query)
             || !query.TryGetProperty("pages", out var pages))
+        {
             return null;
+        }
 
         var titles = pages.EnumerateArray()
             .Where(p => !(p.TryGetProperty("pageprops", out var props) &&
@@ -461,13 +541,18 @@ public class WikipediaImporter
         if (doc is null
             || !doc.RootElement.TryGetProperty("results", out var results)
             || !results.TryGetProperty("bindings", out var bindings))
+        {
             return ranks;
+        }
 
         foreach (var row in bindings.EnumerateArray())
         {
             var rank = row.TryGetProperty("rank", out var r) ? GetString(r, "value")?.Split('/').Last() : null;
             var name = row.TryGetProperty("name", out var n) ? GetString(n, "value") : null;
-            if (name is not null) ranks.Add((rank, name));
+            if (name is not null)
+            {
+                ranks.Add((rank, name));
+            }
         }
 
         return ranks;
@@ -482,7 +567,10 @@ public class WikipediaImporter
             || !query.TryGetProperty("pages", out var pages)
             || pages.GetArrayLength() == 0
             || !pages[0].TryGetProperty("thumbnail", out var thumbnail))
+        {
             return null;
+        }
+
         var source = GetString(thumbnail, "source");
         return source?.Split('?')[0];
     }
@@ -495,7 +583,9 @@ public class WikipediaImporter
         if (doc is null
             || !doc.RootElement.TryGetProperty("query", out var query)
             || !query.TryGetProperty("pages", out var pages))
+        {
             return infos;
+        }
 
         foreach (var page in pages.EnumerateArray())
         {
@@ -504,7 +594,9 @@ public class WikipediaImporter
                 || !page.TryGetProperty("imageinfo", out var list)
                 || list.ValueKind != JsonValueKind.Array
                 || list.GetArrayLength() == 0)
+            {
                 continue;
+            }
 
             var ii = list[0];
             var meta = ii.TryGetProperty("extmetadata", out var m) ? m : default;
@@ -527,7 +619,11 @@ public class WikipediaImporter
 
     private static string? MetaValue(JsonElement meta, string name)
     {
-        if (meta.ValueKind != JsonValueKind.Object || !meta.TryGetProperty(name, out var entry)) return null;
+        if (meta.ValueKind != JsonValueKind.Object || !meta.TryGetProperty(name, out var entry))
+        {
+            return null;
+        }
+
         var value = GetString(entry, "value");
         return value is null ? null : WebUtility.HtmlDecode(Regex.Replace(value, "<[^>]+>", " "));
     }
@@ -540,7 +636,9 @@ public class WikipediaImporter
             || !doc.RootElement.TryGetProperty("query", out var query)
             || !query.TryGetProperty("pages", out var pages)
             || pages.GetArrayLength() == 0)
+        {
             return null;
+        }
 
         var text = GetString(pages[0], "extract");
         return string.IsNullOrWhiteSpace(text) ? null : text;
@@ -558,7 +656,10 @@ public class WikipediaImporter
             || revisions.GetArrayLength() == 0
             || !revisions[0].TryGetProperty("slots", out var slots)
             || !slots.TryGetProperty("main", out var main))
+        {
             return null;
+        }
+
         return GetString(main, "content");
     }
 
@@ -568,13 +669,27 @@ public class WikipediaImporter
         for (var hop = 0; hop < 5 && !string.IsNullOrWhiteSpace(name); hop++)
         {
             var template = await GetWikitextAsync(language, $"Template:Taxonomy/{name}");
-            if (template is null) return null;
+            if (template is null)
+            {
+                return null;
+            }
 
             var (rank, link, parent) = WikipediaText.ReadTaxonomyTemplate(template);
-            if (rank is null) return null;
+            if (rank is null)
+            {
+                return null;
+            }
+
             if (rank.Equals("familia", StringComparison.OrdinalIgnoreCase))
+            {
                 return link is not null && Regex.IsMatch(link, @"^[A-Z][a-z]+idae$") ? link : null;
-            if (!BelowFamilyRanks.Contains(rank, StringComparer.OrdinalIgnoreCase)) return null;
+            }
+
+            if (!BelowFamilyRanks.Contains(rank, StringComparer.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             name = parent;
         }
 
@@ -589,7 +704,10 @@ public class WikipediaImporter
             || !doc.RootElement.TryGetProperty("entities", out var entities)
             || !entities.TryGetProperty(qid, out var entity)
             || !entity.TryGetProperty("claims", out var claims))
+        {
             return null;
+        }
+
         return claims.Clone();
     }
 
@@ -631,8 +749,11 @@ public class WikipediaImporter
                 }
 
                 if ((int)response.StatusCode >= 500)
+                {
                     throw new HttpRequestException($"Wikipedia answered {(int)response.StatusCode}", null,
                         response.StatusCode);
+                }
+
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Wikipedia request failed with {Status}: {Url}", (int)response.StatusCode, url);
@@ -652,14 +773,24 @@ public class WikipediaImporter
 
     private static IEnumerable<JsonElement> GetDataValues(JsonElement claims, string property)
     {
-        if (!claims.TryGetProperty(property, out var list)) yield break;
+        if (!claims.TryGetProperty(property, out var list))
+        {
+            yield break;
+        }
+
         foreach (var claim in list.EnumerateArray())
         {
-            if (GetString(claim, "rank") == "deprecated") continue;
+            if (GetString(claim, "rank") == "deprecated")
+            {
+                continue;
+            }
+
             if (claim.TryGetProperty("mainsnak", out var snak)
                 && snak.TryGetProperty("datavalue", out var dataValue)
                 && dataValue.TryGetProperty("value", out var value))
+            {
                 yield return value;
+            }
         }
     }
 
@@ -672,11 +803,21 @@ public class WikipediaImporter
             || !entities.TryGetProperty(qid, out var entity)
             || !entity.TryGetProperty("labels", out var labels)
             || !labels.TryGetProperty("en", out var en))
+        {
             return null;
+        }
 
         var label = GetString(en, "value")?.Trim().ToLowerInvariant();
-        if (label is null) return null;
-        if (label.EndsWith(" species")) label = label[..^" species".Length];
+        if (label is null)
+        {
+            return null;
+        }
+
+        if (label.EndsWith(" species"))
+        {
+            label = label[..^" species".Length];
+        }
+
         return IucnStatuses.Values.FirstOrDefault(v => v == label);
     }
 
@@ -699,24 +840,41 @@ public class WikipediaImporter
     private static List<decimal> GetQuantities(JsonElement claims, string property, Dictionary<string, decimal> factors)
     {
         var values = new List<decimal>();
-        if (!claims.TryGetProperty(property, out var list)) return values;
+        if (!claims.TryGetProperty(property, out var list))
+        {
+            return values;
+        }
 
         foreach (var claim in list.EnumerateArray())
         {
-            if (GetString(claim, "rank") == "deprecated" || !IsAdultOrUnspecified(claim)) continue;
+            if (GetString(claim, "rank") == "deprecated" || !IsAdultOrUnspecified(claim))
+            {
+                continue;
+            }
+
             if (!claim.TryGetProperty("mainsnak", out var snak)
                 || !snak.TryGetProperty("datavalue", out var dataValue)
                 || !dataValue.TryGetProperty("value", out var value)
                 || value.ValueKind != JsonValueKind.Object)
+            {
                 continue;
+            }
 
             var unit = GetString(value, "unit")?.Split('/').Last();
-            if (unit is null || !factors.TryGetValue(unit, out var factor)) continue;
+            if (unit is null || !factors.TryGetValue(unit, out var factor))
+            {
+                continue;
+            }
+
             foreach (var key in new[] { "amount", "lowerBound", "upperBound" })
+            {
                 if (decimal.TryParse(GetString(value, key), NumberStyles.Float, CultureInfo.InvariantCulture,
                         out var number)
                     && number >= 0)
+                {
                     values.Add(number * factor);
+                }
+            }
         }
 
         return values;
@@ -726,7 +884,9 @@ public class WikipediaImporter
     {
         if (!claim.TryGetProperty("qualifiers", out var qualifiers)
             || !qualifiers.TryGetProperty("P3831", out var roles))
+        {
             return true;
+        }
 
         return roles.EnumerateArray().Any(role =>
             role.TryGetProperty("datavalue", out var dv)
@@ -924,7 +1084,9 @@ internal static class WikipediaText
             }
 
             if (StopSection.IsMatch(match.Groups[1].Value.Length == 2 ? title : parent))
+            {
                 return sections.Where(s => s.Text.Length > 0 || s.Heading.Length == 0).ToList();
+            }
         }
 
         sections.Add(new Section(heading, string.Join("\n", buffer).Trim()));
@@ -934,7 +1096,10 @@ internal static class WikipediaText
     internal static List<string> Sentences(string? text)
     {
         var sentences = new List<string>();
-        if (string.IsNullOrWhiteSpace(text)) return sentences;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return sentences;
+        }
 
         var normalized = Regex.Replace(StripCitations(text), @"\s+", " ").Trim();
         var start = 0;
@@ -948,7 +1113,9 @@ internal static class WikipediaText
                 if (Abbreviations.Contains(word, StringComparer.Ordinal)
                     || Regex.IsMatch(word, @"^\p{Lu}$")
                     || Regex.IsMatch(word, @"^(?:\p{L}\.)+\p{L}$"))
+                {
                     continue;
+                }
             }
 
             sentences.Add(candidate.Trim());
@@ -1000,7 +1167,10 @@ internal static class WikipediaText
                 continue;
             }
 
-            if (depth == 0) builder.Append(text[i]);
+            if (depth == 0)
+            {
+                builder.Append(text[i]);
+            }
         }
 
         return builder.ToString();
@@ -1013,13 +1183,19 @@ internal static class WikipediaText
             var allowed = quantity == Quantity.Lifespan
                 ? !NonLifespanSection.IsMatch(LastHeading(section.Heading))
                 : section.Heading.Length == 0 || SizeSection.IsMatch(section.Heading);
-            if (!allowed) continue;
+            if (!allowed)
+            {
+                continue;
+            }
 
             var sentences = Sentences(section.Text);
             for (var i = 0; i < sentences.Count; i++)
             {
                 var values = MeasureSentence(sentences[i], quantity);
-                if (values.Count == 0) continue;
+                if (values.Count == 0)
+                {
+                    continue;
+                }
 
                 var male = Regex.IsMatch(sentences[i], @"\bmales?\b", Ci);
                 var female = Regex.IsMatch(sentences[i], @"\bfemales?\b", Ci);
@@ -1027,14 +1203,20 @@ internal static class WikipediaText
                 {
                     var other = female ? @"\bmales?\b" : @"\bfemales?\b";
                     if (Regex.IsMatch(sentences[i + 1], other, Ci))
+                    {
                         values.AddRange(MeasureSentence(sentences[i + 1], quantity));
+                    }
                 }
 
                 var mins = values.Where(v => v.Min is not null).Select(v => v.Min!.Value).ToList();
                 var maxes = values.Where(v => v.Max is not null).Select(v => v.Max!.Value).ToList();
                 decimal? min = mins.Count > 0 ? mins.Min() : null;
                 decimal? max = maxes.Count > 0 ? maxes.Max() : null;
-                if (min is not null && max is not null && min > max) continue;
+                if (min is not null && max is not null && min > max)
+                {
+                    continue;
+                }
+
                 return (min, max);
             }
         }
@@ -1045,7 +1227,10 @@ internal static class WikipediaText
     internal static List<(decimal? Min, decimal? Max)> MeasureSentence(string sentence, Quantity quantity)
     {
         var found = new List<(decimal? Min, decimal? Max)>();
-        if (BirthWords.IsMatch(sentence)) return found;
+        if (BirthWords.IsMatch(sentence))
+        {
+            return found;
+        }
 
         var text = sentence;
         string previous;
@@ -1058,20 +1243,31 @@ internal static class WikipediaText
         text = BodyLengthPhrase.Replace(text, " bodylength ");
         text = Regex.Replace(text, @"\s+", " ");
         if (quantity == Quantity.Lifespan)
+        {
             text = NumberWordYears.Replace(text,
                 m => NumberWords[m.Groups["w"].Value].ToString(CultureInfo.InvariantCulture));
+        }
 
         var clauses = new List<string>();
         foreach (var piece in Regex.Split(text, @";|,\s+|\s+[—–]\s+|—"))
+        {
             if (clauses.Count > 0 && Regex.IsMatch(piece, @"^\s*(?:which|who|such as|that|including)\b", Ci))
+            {
                 clauses[^1] = $"{clauses[^1]}, {piece}";
+            }
             else
+            {
                 clauses.Add(piece);
+            }
+        }
 
         var firstClause = clauses.Count > 0 ? clauses[0] : text;
         foreach (var clause in clauses)
         {
-            if (OutlierClause.IsMatch(clause)) continue;
+            if (OutlierClause.IsMatch(clause))
+            {
+                continue;
+            }
 
             var matches = MeasurementPattern.Matches(clause).ToList();
             for (var m = 0; m < matches.Count; m++)
@@ -1079,13 +1275,23 @@ internal static class WikipediaText
                 var match = matches[m];
                 var unit = match.Groups["u"].Value.ToLowerInvariant();
                 var type = UnitType(unit);
-                if (type != quantity) continue;
+                if (type != quantity)
+                {
+                    continue;
+                }
+
                 if (match.Groups["ua"].Success &&
-                    UnitType(match.Groups["ua"].Value.ToLowerInvariant()) != type) continue;
+                    UnitType(match.Groups["ua"].Value.ToLowerInvariant()) != type)
+                {
+                    continue;
+                }
+
                 if (match.Groups["ua"].Success
                     && !match.Groups["ua"].Value.Equals(match.Groups["u"].Value, StringComparison.OrdinalIgnoreCase)
                     && Factor(match.Groups["ua"].Value.ToLowerInvariant()) != Factor(unit))
+                {
                     continue;
+                }
 
                 var before = clause[(m == 0 ? 0 : matches[m - 1].Index + matches[m - 1].Length)..match.Index];
                 var connectors = Connector.Matches(before);
@@ -1098,44 +1304,81 @@ internal static class WikipediaText
                 var following = firstConnector.Success ? after[..firstConnector.Index] : after;
                 var context = $"{preceding} {following}";
 
-                if (MaturityWords.IsMatch(context) || ExcludedContext.IsMatch(context)) continue;
+                if (MaturityWords.IsMatch(context) || ExcludedContext.IsMatch(context))
+                {
+                    continue;
+                }
 
                 if (quantity == Quantity.Length)
                 {
                     var whole = context.Contains("bodylength", StringComparison.OrdinalIgnoreCase);
-                    if (!LengthWords.IsMatch(context)) continue;
+                    if (!LengthWords.IsMatch(context))
+                    {
+                        continue;
+                    }
+
                     if (HeightWords.IsMatch(context) &&
-                        !Regex.IsMatch(context, @"\b(?:long|length|bodylength)\b", Ci)) continue;
-                    if (!whole && ExcludedContext.IsMatch(text)) continue;
+                        !Regex.IsMatch(context, @"\b(?:long|length|bodylength)\b", Ci))
+                    {
+                        continue;
+                    }
+
+                    if (!whole && ExcludedContext.IsMatch(text))
+                    {
+                        continue;
+                    }
                 }
                 else if (quantity == Quantity.Weight)
                 {
-                    if (!WeightWords.IsMatch(context) || ExcludedContext.IsMatch(firstClause)) continue;
+                    if (!WeightWords.IsMatch(context) || ExcludedContext.IsMatch(firstClause))
+                    {
+                        continue;
+                    }
                 }
                 else
                 {
-                    if (!LifespanWords.IsMatch(context) || LifespanExclusions.IsMatch(context)) continue;
+                    if (!LifespanWords.IsMatch(context) || LifespanExclusions.IsMatch(context))
+                    {
+                        continue;
+                    }
                 }
 
-                if (!TryNumber(match.Groups["a"].Value, out var a)) continue;
+                if (!TryNumber(match.Groups["a"].Value, out var a))
+                {
+                    continue;
+                }
+
                 decimal? b = null;
                 if (match.Groups["b"].Success)
                 {
-                    if (!TryNumber(match.Groups["b"].Value, out var parsed) || parsed < a) continue;
+                    if (!TryNumber(match.Groups["b"].Value, out var parsed) || parsed < a)
+                    {
+                        continue;
+                    }
+
                     b = parsed;
                 }
 
                 var factor = Factor(unit);
                 var low = a * factor;
                 var high = (b ?? a) * factor;
-                if (!InBounds(low, quantity) || !InBounds(high, quantity)) continue;
+                if (!InBounds(low, quantity) || !InBounds(high, quantity))
+                {
+                    continue;
+                }
 
                 if (b is null && (MaxOnlyPrefix.IsMatch(before) || NegatedMinPrefix.IsMatch(before)))
+                {
                     found.Add((null, high));
+                }
                 else if (b is null && MinOnlyPrefix.IsMatch(before))
+                {
                     found.Add((low, null));
+                }
                 else
+                {
                     found.Add((low, high));
+                }
             }
         }
 
@@ -1214,7 +1457,10 @@ internal static class WikipediaText
         {
             if (Regex.IsMatch(sentence,
                     @"\b(?:historically|formerly|once|originally|fossil|extinct|introduced|captivity|zoos?|aquari\w*|presumed|thought to|were known|now|believed|assumed|has been caught|recorded)\b",
-                    Ci)) continue;
+                    Ci))
+            {
+                continue;
+            }
 
             var text = Regex.Replace(sentence, @"\s*\([^()]*\)", string.Empty);
             if (range is null)
@@ -1222,9 +1468,12 @@ internal static class WikipediaText
                 var match = Regex.Match(text, @"\b(?:native|endemic|restricted|confined)\s+(?:only\s+)?to\s+(?<x>.+)",
                     Ci);
                 if (!match.Success)
+                {
                     match = Regex.Match(text,
                         @"\b(?:found|distributed|occurs?|ranges?|lives?)\s+(?:(?:mainly|mostly|primarily|largely|predominantly|only|exclusively|widely)\s+)?(?:only\s+)?(?<p>in|throughout|across|along|on)\s+(?<x>.+)",
                         Ci);
+                }
+
                 if (match.Success)
                 {
                     var (head, tail) = SplitGeography(CutPhrase(match.Groups["x"].Value));
@@ -1260,11 +1509,17 @@ internal static class WikipediaText
                 {
                     var (head, tail) = SplitGeography(CutPhrase(match.Groups["x"].Value));
                     habitat = CleanHabitat(head);
-                    if (habitat is not null && tail is not null && range is null) range = CleanRange(tail);
+                    if (habitat is not null && tail is not null && range is null)
+                    {
+                        range = CleanRange(tail);
+                    }
                 }
             }
 
-            if (habitat is not null && range is not null) break;
+            if (habitat is not null && range is not null)
+            {
+                break;
+            }
         }
 
         return (habitat, range);
@@ -1276,10 +1531,16 @@ internal static class WikipediaText
             @";|:|\.\s|\.$|,\s*(?:where|which|but|although|though|while|whereas|and|it|they)\b|\s+(?:where|which|that|because|although|though|while|whereas|but)\s",
             Ci)[0];
         var match = GeographicTail.Match(clause);
-        if (!match.Success) return null;
+        if (!match.Success)
+        {
+            return null;
+        }
 
         var range = CleanRange(match.Groups["t"].Value + match.Groups["ft"].Value);
-        if (range is null || !Regex.IsMatch(match.Groups["t"].Value, @"^\p{Lu}")) return null;
+        if (range is null || !Regex.IsMatch(match.Groups["t"].Value, @"^\p{Lu}"))
+        {
+            return null;
+        }
 
         var place = Regex.Match(match.Groups["h"].Value, @"\b(?:in|on|among|amid)\s+(?<p>[^\p{Lu},;]+)$");
         var habitat = place.Success
@@ -1298,7 +1559,10 @@ internal static class WikipediaText
             && !Regex.IsMatch(match.Groups["h"].Value,
                 @"\b(?:coasts?|coastlines?|islands?|parts?|regions?|portions?|north\w*|south\w*|east\w*|west\w*|central|interior)\b",
                 RegexOptions.IgnoreCase))
+        {
             return (match.Groups["h"].Value, match.Groups["t"].Value);
+        }
+
         return (phrase, null);
     }
 
@@ -1342,7 +1606,10 @@ internal static class WikipediaText
 
     internal static string? CleanPhrase(string? phrase)
     {
-        if (string.IsNullOrWhiteSpace(phrase)) return null;
+        if (string.IsNullOrWhiteSpace(phrase))
+        {
+            return null;
+        }
 
         var value = Regex.Replace(StripCitations(phrase), @"\s+", " ").Trim();
         value = Regex.Replace(value, @"^(?:the|a|an)\s+", string.Empty, Ci);
@@ -1355,17 +1622,27 @@ internal static class WikipediaText
             || !Regex.IsMatch(value, @"^\p{L}")
             || Regex.IsMatch(value, @"\b(?:it|its|they|their|this|these|species)\b", Ci)
             || Regex.IsMatch(value, @"\b(?:and|or|of|the|in|to|with|from)$", Ci))
+        {
             return null;
+        }
+
         return char.ToUpperInvariant(value[0]) + value[1..];
     }
 
     internal static string? ProfileFromLead(string? extract)
     {
-        if (string.IsNullOrWhiteSpace(extract)) return null;
+        if (string.IsNullOrWhiteSpace(extract))
+        {
+            return null;
+        }
 
         var cleaned = RemovePronunciation(extract);
         var sentences = Sentences(cleaned);
-        if (sentences.Count == 0) return null;
+        if (sentences.Count == 0)
+        {
+            return null;
+        }
+
         var two = sentences.Count > 1 ? $"{sentences[0]} {sentences[1]}" : sentences[0];
         return two.Length <= 350 ? two : sentences[0];
     }
@@ -1390,20 +1667,31 @@ internal static class WikipediaText
 
         foreach (var section in sections)
         {
-            if (section.Heading.Length > 0 && FunFactExcludedSection.IsMatch(section.Heading)) continue;
+            if (section.Heading.Length > 0 && FunFactExcludedSection.IsMatch(section.Heading))
+            {
+                continue;
+            }
 
             foreach (var raw in Sentences(RemovePronunciation(section.Text)))
             {
                 var sentence = raw.Trim();
-                if (!sentence.EndsWith('.') || !Regex.IsMatch(sentence, @"^[\p{Lu}""“]")) continue;
+                if (!sentence.EndsWith('.') || !Regex.IsMatch(sentence, @"^[\p{Lu}""“]"))
+                {
+                    continue;
+                }
+
                 if (profileSentences.Any(p => p.Equals(sentence, StringComparison.Ordinal))
                     || (profile is not null && profile.Contains(sentence, StringComparison.Ordinal)))
+                {
                     continue;
+                }
 
                 var words = Words(sentence);
                 if (words.Count > 0 && profileWords.Count > 0
                                     && words.Count(w => profileWords.Contains(w)) >= words.Count * 0.5)
+                {
                     continue;
+                }
 
                 var score = ScoreFunFact(sentence);
                 if (score > bestScore)
@@ -1422,31 +1710,82 @@ internal static class WikipediaText
         var score = 0;
         if (Regex.IsMatch(sentence,
                 @"\b(?:largest|smallest|longest|shortest|fastest|slowest|heaviest|lightest|oldest|deepest|highest|biggest|strongest|loudest|rarest|the most|one of the most|the least|the only|only known|unique\w*|unlike|world record|holds? the record|record-breaking|world's)\b",
-                Ci)) score += 3;
+                Ci))
+        {
+            score += 3;
+        }
+
         if (Regex.IsMatch(sentence,
                 @"\b(?:can|able to|capable of|regenerat\w*|survives?|surviving|without|never|despite)\b",
-                Ci)) score += 2;
-        if (Regex.IsMatch(sentence, @"\d")) score += 1;
+                Ci))
+        {
+            score += 2;
+        }
+
+        if (Regex.IsMatch(sentence, @"\d"))
+        {
+            score += 1;
+        }
+
         if (Regex.IsMatch(sentence,
                 @"\b(?:venom\w*|poison\w*|toxi\w*|glow\w*|biolumin\w*|transparent|translucent|see-through|camouflag\w*|mimic\w*|hibernat\w*|torpor|backwards?|upside[\s-]down|blood|mucus|slime|cannibal\w*|electr\w*|echolocat\w*|tools?|sings?|songs?|clatter\w*|clap\w*|danc\w*|play(?:s|ing)? dead|inflat\w*|spit\w*|squirt\w*|ink|pain|cancer|oxygen|immune|sleep\w*|swallow\w*|hears?|smells?|underwater|pheromone\w*|queen|eusocial|cold-blooded|regrow\w*|limbs?|neoten\w*|gills?|eat\w*|consum\w*|tap\w*|drink\w*|walks?)\b",
-                Ci)) score += 2;
+                Ci))
+        {
+            score += 2;
+        }
+
         if (Regex.IsMatch(sentence,
                 @"\b(?:genus|genera|species was|described by|first described|named after|named for|etymolog\w*|derived from|latin|greek|taxonom\w*|classified|subspecies|phylogen\w*|clade|sister group|synonym\w*|binomial|family\b)",
-                Ci)) score -= 4;
+                Ci))
+        {
+            score -= 4;
+        }
+
         if (Regex.IsMatch(sentence,
                 @"\b(?:IUCN|Red List|Least Concern|assessed|endangered|threatened|vulnerable|conservation)\b",
-                Ci)) score -= 4;
+                Ci))
+        {
+            score -= 4;
+        }
+
         if (Regex.IsMatch(sentence, @"\b(?:\d+(?:\.\d+)?\s*(?:mm|cm|m|kg|g|in|ft|lb))\b") && !Regex.IsMatch(sentence,
-                @"\b(?:largest|smallest|longest|fastest|heaviest|deepest|the only|world's|unlike)\b", Ci)) score -= 2;
-        if (Regex.IsMatch(sentence, @"\b(?:prior to|was previously|formerly|until the discovery)\b", Ci)) score -= 3;
-        if (Regex.IsMatch(sentence, @"^(?:Like most|Like other|As with|As in)\b", Ci)) score -= 2;
+                @"\b(?:largest|smallest|longest|fastest|heaviest|deepest|the only|world's|unlike)\b", Ci))
+        {
+            score -= 2;
+        }
+
+        if (Regex.IsMatch(sentence, @"\b(?:prior to|was previously|formerly|until the discovery)\b", Ci))
+        {
+            score -= 3;
+        }
+
+        if (Regex.IsMatch(sentence, @"^(?:Like most|Like other|As with|As in)\b", Ci))
+        {
+            score -= 2;
+        }
+
         if (Regex.IsMatch(sentence, @"\b(?:study|studies|researchers?|reported|report|published|journal)\b",
-                Ci)) score -= 1;
-        if (Regex.IsMatch(sentence, @"\b(?:1[5-9]\d\d|20\d\d)\b")) score -= 1;
-        if (sentence.Length < 60 || sentence.Length > 220) score -= 3;
+                Ci))
+        {
+            score -= 1;
+        }
+
+        if (Regex.IsMatch(sentence, @"\b(?:1[5-9]\d\d|20\d\d)\b"))
+        {
+            score -= 1;
+        }
+
+        if (sentence.Length < 60 || sentence.Length > 220)
+        {
+            score -= 3;
+        }
+
         if (Regex.IsMatch(sentence,
                 @"^(?:However|Further|Furthermore|Also|Additionally|Moreover|In addition|Another|This|These|It is also)\b"))
+        {
             score -= 1;
+        }
+
         return score;
     }
 
@@ -1459,7 +1798,10 @@ internal static class WikipediaText
     {
         var start = Regex.Match(wikitext,
             @"\{\{\s*(?:Speciesbox|Automatic[ _]taxobox|Taxobox|Subspeciesbox|Infraspeciesbox|Hybridbox)\b", Ci);
-        if (!start.Success) return new Infobox(null, null, null, null, null);
+        if (!start.Success)
+        {
+            return new Infobox(null, null, null, null, null);
+        }
 
         var parameters = ReadTemplateParameters(wikitext, start.Index);
 
@@ -1484,13 +1826,22 @@ internal static class WikipediaText
         string? taxonomyStart = null;
         var box = start.Value.TrimStart('{').Trim().ToLowerInvariant().Replace('_', ' ');
         if (box is "speciesbox" or "subspeciesbox" or "infraspeciesbox")
+        {
             taxonomyStart = Get("genus") ?? Get("parent") ??
                 Get("taxon")?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        else if (box is "automatic taxobox") taxonomyStart = Get("taxon");
+        }
+        else if (box is "automatic taxobox")
+        {
+            taxonomyStart = Get("taxon");
+        }
+
         if (taxonomyStart is not null)
         {
             taxonomyStart = StripCitations(taxonomyStart).Trim();
-            if (!Regex.IsMatch(taxonomyStart, @"^[A-Z][a-z]+(?: \([A-Z][a-z]+\))?$")) taxonomyStart = null;
+            if (!Regex.IsMatch(taxonomyStart, @"^[A-Z][a-z]+(?: \([A-Z][a-z]+\))?$"))
+            {
+                taxonomyStart = null;
+            }
         }
 
         var caption = Get("range_map_caption");
@@ -1507,7 +1858,9 @@ internal static class WikipediaText
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (Match match in Regex.Matches(wikitext, @"^\s*\|\s*(?<k>rank|link|parent)\s*=\s*(?<v>[^|\n}]*)",
                      Ci | RegexOptions.Multiline))
+        {
             parameters.TryAdd(match.Groups["k"].Value, match.Groups["v"].Value.Trim());
+        }
 
         string? Get(string name)
         {
@@ -1515,9 +1868,17 @@ internal static class WikipediaText
         }
 
         var link = Get("link");
-        if (link is not null) link = Regex.Replace(StripCitations(link), @"\s+", " ").Trim();
+        if (link is not null)
+        {
+            link = Regex.Replace(StripCitations(link), @"\s+", " ").Trim();
+        }
+
         var parent = Get("parent");
-        if (parent is not null) parent = parent.Split('/')[0].Trim();
+        if (parent is not null)
+        {
+            parent = parent.Split('/')[0].Trim();
+        }
+
         return (Get("rank")?.Trim(), link, parent);
     }
 
@@ -1534,7 +1895,11 @@ internal static class WikipediaText
             if (two == "{{")
             {
                 depth++;
-                if (depth > 1) current.Append(two);
+                if (depth > 1)
+                {
+                    current.Append(two);
+                }
+
                 i++;
                 continue;
             }
@@ -1582,9 +1947,16 @@ internal static class WikipediaText
         foreach (var part in parts.Skip(1))
         {
             var index = part.IndexOf('=');
-            if (index <= 0) continue;
+            if (index <= 0)
+            {
+                continue;
+            }
+
             var key = part[..index].Trim();
-            if (key.Length > 0 && !parameters.ContainsKey(key)) parameters[key] = part[(index + 1)..];
+            if (key.Length > 0 && !parameters.ContainsKey(key))
+            {
+                parameters[key] = part[(index + 1)..];
+            }
         }
 
         return parameters;
@@ -1602,12 +1974,23 @@ internal static class WikipediaText
         var names = new List<string>();
         foreach (Match match in Regex.Matches(lead, @"'''''(?<italic>.+?)'''''|'''(?<bold>.+?)'''"))
         {
-            if (!match.Groups["bold"].Success) continue;
+            if (!match.Groups["bold"].Success)
+            {
+                continue;
+            }
+
             var raw = match.Groups["bold"].Value;
             if (raw.StartsWith("''", StringComparison.Ordinal) ||
-                raw.Contains("''", StringComparison.Ordinal)) continue;
+                raw.Contains("''", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             var name = Regex.Replace(StripCitations(raw), @"\s+", " ").Trim();
-            if (name.Length is >= 2 and <= 80 && Regex.IsMatch(name, @"^[\p{L}][\p{L}\s'’\-.]*$")) names.Add(name);
+            if (name.Length is >= 2 and <= 80 && Regex.IsMatch(name, @"^[\p{L}][\p{L}\s'’\-.]*$"))
+            {
+                names.Add(name);
+            }
         }
 
         return names;
@@ -1623,7 +2006,10 @@ internal static class WikipediaText
         {
             var name = new[] { "a", "b", "c", "d" }.Select(g => match.Groups[g]).First(g => g.Success).Value.Trim();
             name = Regex.Replace(name, @"^(?:File|Image)\s*:\s*", string.Empty, Ci);
-            if (name.Length > 0 && !files.Contains(name, StringComparer.OrdinalIgnoreCase)) files.Add(name);
+            if (name.Length > 0 && !files.Contains(name, StringComparer.OrdinalIgnoreCase))
+            {
+                files.Add(name);
+            }
         }
 
         return files;

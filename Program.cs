@@ -61,13 +61,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options => options.UseVersionedAssets());
 }
 
-if (spaRoot is not null) app.UseSpaFiles(spaRoot);
+if (spaRoot is not null)
+{
+    app.UseSpaFiles(spaRoot);
+}
 
 app.UseCors();
 app.UseRateLimiter();
 app.MapControllers();
 app.MapReservedNotFound();
 
-if (spaRoot is not null) app.MapSpaFallback(spaRoot);
+if (spaRoot is not null)
+{
+    app.MapSpaFallback(spaRoot);
+}
 
 app.Run();

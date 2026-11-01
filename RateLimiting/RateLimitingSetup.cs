@@ -45,9 +45,15 @@ public static class RateLimitingSetup
         bool allowAdmin)
     {
         var settings = Settings(context);
-        if (!settings.Enabled) return RateLimitPartition.GetNoLimiter("off");
+        if (!settings.Enabled)
+        {
+            return RateLimitPartition.GetNoLimiter("off");
+        }
 
-        if (allowAdmin && HasValidAdminKey(context)) return RateLimitPartition.GetNoLimiter("admin");
+        if (allowAdmin && HasValidAdminKey(context))
+        {
+            return RateLimitPartition.GetNoLimiter("admin");
+        }
 
         var limit = Math.Max(1, permits(settings));
         var window = Window(settings);
@@ -64,7 +70,11 @@ public static class RateLimitingSetup
     private static bool HasValidAdminKey(HttpContext context)
     {
         var configured = context.RequestServices.GetRequiredService<IConfiguration>()[AdminKey.ConfigurationKey];
-        if (string.IsNullOrWhiteSpace(configured)) return false;
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return false;
+        }
+
         return AdminKey.Matches(configured, context.Request.Headers[AdminKey.HeaderName].ToString());
     }
 

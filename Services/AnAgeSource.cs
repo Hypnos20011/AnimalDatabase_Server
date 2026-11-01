@@ -12,7 +12,11 @@ public class AnAgeSource
         foreach (var line in File.ReadLines(filePath).Skip(1))
         {
             var columns = line.Split('\t');
-            if (columns.Length < 21) continue;
+            if (columns.Length < 21)
+            {
+                continue;
+            }
+
             var key = Key(columns[6], columns[7]);
             var weightGrams = ParseNumber(columns[18]);
             var longevity = ParseNumber(columns[20]);
@@ -28,7 +32,11 @@ public class AnAgeSource
     public TraitData? Find(string scientificName)
     {
         var parts = scientificName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 2) return null;
+        if (parts.Length < 2)
+        {
+            return null;
+        }
+
         return _animals.GetValueOrDefault(Key(parts[0], parts[1]));
     }
 

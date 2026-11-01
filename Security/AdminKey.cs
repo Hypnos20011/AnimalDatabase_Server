@@ -10,7 +10,10 @@ public static class AdminKey
 
     public static bool Matches(string configured, string? provided)
     {
-        if (string.IsNullOrEmpty(provided)) return false;
+        if (string.IsNullOrEmpty(provided))
+        {
+            return false;
+        }
 
         var expected = SHA256.HashData(Encoding.UTF8.GetBytes(configured));
         var actual = SHA256.HashData(Encoding.UTF8.GetBytes(provided));

@@ -84,7 +84,9 @@ public static class TraitMerger
     private static bool Disagrees(decimal? existingMin, decimal? existingMax, decimal? sourceMin, decimal? sourceMax)
     {
         if ((existingMin == null && existingMax == null) || (sourceMin == null && sourceMax == null))
+        {
             return false;
+        }
 
         var existingLow = existingMin ?? existingMax;
         var existingHigh = existingMax ?? existingMin;
@@ -97,7 +99,9 @@ public static class TraitMerger
     private static string Describe(decimal? min, decimal? max)
     {
         if (min.HasValue && max.HasValue && min != max)
+        {
             return $"{min} - {max}";
+        }
 
         return $"{min ?? max}";
     }

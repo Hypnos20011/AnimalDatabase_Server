@@ -17,7 +17,10 @@ public static partial class SpaHosting
     public static string? ResolveRoot(IConfiguration configuration, IWebHostEnvironment environment)
     {
         var settings = configuration.GetSection(SpaSettings.SectionName).Get<SpaSettings>() ?? new SpaSettings();
-        if (!settings.Enabled || string.IsNullOrWhiteSpace(settings.RootPath)) return null;
+        if (!settings.Enabled || string.IsNullOrWhiteSpace(settings.RootPath))
+        {
+            return null;
+        }
 
         var root = Path.GetFullPath(settings.RootPath, environment.ContentRootPath);
         return File.Exists(Path.Combine(root, IndexFile)) ? root : null;
@@ -54,7 +57,11 @@ public static partial class SpaHosting
 
     public static WebApplication MapReservedNotFound(this WebApplication app)
     {
-        foreach (var prefix in ReservedPrefixes) app.MapFallback(prefix + "/{**path}", NotFound);
+        foreach (var prefix in ReservedPrefixes)
+        {
+            app.MapFallback(prefix + "/{**path}", NotFound);
+        }
+
         return app;
     }
 
@@ -65,7 +72,11 @@ public static partial class SpaHosting
 
     public static string CacheControlFor(string fileName)
     {
-        if (string.Equals(fileName, IndexFile, StringComparison.OrdinalIgnoreCase)) return IndexCache;
+        if (string.Equals(fileName, IndexFile, StringComparison.OrdinalIgnoreCase))
+        {
+            return IndexCache;
+        }
+
         return HashedName().IsMatch(fileName) ? HashedAssetCache : OtherAssetCache;
     }
 

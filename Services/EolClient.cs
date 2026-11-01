@@ -27,8 +27,15 @@ public class EolClient
                 for (var textsPage = 1; textsPage <= MaxTextPages; textsPage++)
                 {
                     var (text, empty) = await ReadPageAsync(id, textsPage);
-                    if (text is not null) return text;
-                    if (empty) break;
+                    if (text is not null)
+                    {
+                        return text;
+                    }
+
+                    if (empty)
+                    {
+                        break;
+                    }
                 }
             }
         }
@@ -43,7 +50,10 @@ public class EolClient
 
     private static bool IsExact(JsonElement result, string scientificName)
     {
-        if (!result.TryGetProperty("title", out var title)) return false;
+        if (!result.TryGetProperty("title", out var title))
+        {
+            return false;
+        }
 
         return string.Equals(scientificName, title.GetString(), StringComparison.OrdinalIgnoreCase);
     }
@@ -54,14 +64,23 @@ public class EolClient
             $"https://eol.org/api/pages/1.0/{id}.json?details=true&texts_per_page=75&texts_page={textsPage}&images_per_page=0";
         using var page = JsonDocument.Parse(await _http.GetStringAsync(pageUrl));
         if (!page.RootElement.GetProperty("taxonConcept").TryGetProperty("dataObjects", out var objects))
+        {
             return (null, true);
+        }
 
         foreach (var item in objects.EnumerateArray())
         {
-            if (!item.TryGetProperty("description", out var description)) continue;
+            if (!item.TryGetProperty("description", out var description))
+            {
+                continue;
+            }
+
             var text = description.GetString();
             if (text is not null && (text.Contains("Range mass") || text.Contains("Range length") ||
-                                     text.Contains("Range lifespan"))) return (text, false);
+                                     text.Contains("Range lifespan")))
+            {
+                return (text, false);
+            }
         }
 
         return (null, objects.GetArrayLength() == 0);

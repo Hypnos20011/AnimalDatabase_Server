@@ -21,9 +21,11 @@ public sealed class RequireAdminKeyAttribute : Attribute, IAuthorizationFilter
 
         var provided = context.HttpContext.Request.Headers[AdminKey.HeaderName].ToString();
         if (!AdminKey.Matches(configured, provided))
+        {
             context.Result = new ObjectResult("A valid admin key is required.")
             {
                 StatusCode = StatusCodes.Status401Unauthorized
             };
+        }
     }
 }

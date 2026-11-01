@@ -24,6 +24,7 @@ public class Animal
 
     public string? IucnStatus { get; set; }
     public string? Habitat { get; set; }
+    public string? HabitatType { get; set; }
     public string? RangeRegion { get; set; }
     public string? Profile { get; set; }
     public string? ThumbnailUrl { get; set; }

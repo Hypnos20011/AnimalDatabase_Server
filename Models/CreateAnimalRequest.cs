@@ -37,6 +37,10 @@ public class CreateAnimalRequest
 
     [MaxLength(255)] public string? Habitat { get; set; }
 
+    [AllowedValues("forest", "grassland", "desert", "mountains", "wetland", "freshwater", "ocean", "deep sea", "underground", null)]
+    [MaxLength(30)]
+    public string? HabitatType { get; set; }
+
     [MaxLength(255)] public string? RangeRegion { get; set; }
 
     public string? Profile { get; set; }

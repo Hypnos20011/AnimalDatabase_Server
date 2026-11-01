@@ -53,12 +53,12 @@ public class AnimalRepository
                 common_name, scientific_name, family, taxonomic_class, is_domesticated,
                 size_length_cm_min, size_length_cm_max, size_height_cm_min, size_height_cm_max,
                 weight_kg_min, weight_kg_max, lifespan_years_min, lifespan_years_max,
-                iucn_status, habitat, range_region, profile)
+                iucn_status, habitat, habitat_type, range_region, profile)
             VALUES (
                 @CommonName, @ScientificName, @Family, @TaxonomicClass, @IsDomesticated,
                 @SizeLengthCmMin, @SizeLengthCmMax, @SizeHeightCmMin, @SizeHeightCmMax,
                 @WeightKgMin, @WeightKgMax, @LifespanYearsMin, @LifespanYearsMax,
-                @IucnStatus, @Habitat, @RangeRegion, @Profile);
+                @IucnStatus, @Habitat, @HabitatType, @RangeRegion, @Profile);
             SELECT LAST_INSERT_ID();
             """,
             ToParameters(request),
@@ -102,6 +102,7 @@ public class AnimalRepository
                 lifespan_years_max = @LifespanYearsMax,
                 iucn_status = @IucnStatus,
                 habitat = @Habitat,
+                habitat_type = @HabitatType,
                 range_region = @RangeRegion,
                 profile = @Profile
             WHERE id = @Id;
@@ -147,6 +148,7 @@ public class AnimalRepository
             request.LifespanYearsMax,
             request.IucnStatus,
             request.Habitat,
+            request.HabitatType,
             request.RangeRegion,
             request.Profile
         });

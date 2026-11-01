@@ -28,7 +28,10 @@ public class StatsRepository : IStatsRepository
         var iucnRows = await connection.QueryAsync<(string Name, long Count)>(
             "SELECT COALESCE(iucn_status, 'unknown'), COUNT(*) FROM animals GROUP BY 1");
         stats.ByIucnStatus = iucnRows.ToDictionary(row => row.Name, row => (int)row.Count);
-
+        var habitatRows = await connection.QueryAsync<(string Name, long Count)>(
+            "SELECT COALESCE(habitat_type, 'unknown'), COUNT(*) FROM animals GROUP BY 1");
+        stats.ByHabitatType = habitatRows.ToDictionary(row => row.Name, row => (int)row.Count);
+        
         return stats;
     }
 }

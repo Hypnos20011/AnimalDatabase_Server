@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using AnimalDatabase.Api.Controllers;
 using AnimalDatabase.Api.Data;
@@ -18,7 +18,8 @@ public class StatsControllerTests
             TotalAnimals = 3,
             DomesticatedAnimals = 1,
             ByClass = new() { ["mammal"] = 2, ["unknown"] = 1 },
-            ByIucnStatus = new() { ["endangered"] = 1, ["unknown"] = 2 }
+            ByIucnStatus = new() { ["endangered"] = 1, ["unknown"] = 2 },
+            ByHabitatType = new() { ["deep sea"] = 1, ["forest"] = 1, ["unknown"] = 1 }
         };
 
         public Task<AnimalStats> GetStatsAsync() => Task.FromResult(Result);
@@ -55,6 +56,10 @@ public class StatsControllerTests
         Assert.Equal(1, root.GetProperty("byClass").GetProperty("unknown").GetInt32());
         Assert.Equal(1, root.GetProperty("byIucnStatus").GetProperty("endangered").GetInt32());
         Assert.Equal(2, root.GetProperty("byIucnStatus").GetProperty("unknown").GetInt32());
+        var habitats = root.GetProperty("byHabitatType");
+        Assert.Equal(1, habitats.GetProperty("deep sea").GetInt32());
+        Assert.Equal(1, habitats.GetProperty("forest").GetInt32());
+        Assert.Equal(1, habitats.GetProperty("unknown").GetInt32());
     }
 
     [Fact]

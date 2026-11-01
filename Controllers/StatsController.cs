@@ -6,7 +6,7 @@ namespace AnimalDatabase.Api.Controllers;
 
 [ApiController]
 [Route("api/stats")]
-public class StatsController:  ControllerBase
+public class StatsController : ControllerBase
 {
     private readonly IStatsRepository _repository;
 
@@ -14,7 +14,7 @@ public class StatsController:  ControllerBase
     {
         _repository = repository;
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<AnimalStats>> Get()
     {

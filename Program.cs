@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using AnimalDatabase.Api.Data;
 using AnimalDatabase.Api.Hosting;
@@ -29,6 +30,13 @@ builder.Services.AddHttpClient<EolClient>(client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd(
         "AnimalDatabase/1.0 (https://github.com/Hypnos20011/AnimalDatabase_Server; personal hobby project)");
     client.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddHttpClient<DeeplTranslator>(client =>
+{
+    client.BaseAddress = new Uri("https://api-free.deepl.com/");
+    client.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("DeepL-Auth-Key", builder.Configuration["DeepL:ApiKey"]);
+    client.Timeout = TimeSpan.FromSeconds(15);
 });
 
 builder.Services.Configure<JsonOptions>(options =>

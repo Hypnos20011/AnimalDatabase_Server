@@ -38,6 +38,7 @@ builder.Services.AddHttpClient<DeeplTranslator>(client =>
         new AuthenticationHeaderValue("DeepL-Auth-Key", builder.Configuration["DeepL:ApiKey"]);
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddTransient<AnimalTextTranslator>();
 
 builder.Services.Configure<JsonOptions>(options =>
 {

@@ -22,6 +22,8 @@ public static class RateLimitingSetup
 
             options.AddPolicy(RateLimitPolicies.WikipediaImport, context =>
                 PerClient(context, settings => settings.WikipediaImportPerWindow, false));
+            options.AddPolicy(RateLimitPolicies.Translate, context =>
+                PerClient(context, settings => settings.TranslatePerWindow, false));
             options.AddPolicy(RateLimitPolicies.SearchLog, context =>
                 PerClient(context, settings => settings.SearchLogPerWindow, true));
             options.AddPolicy(RateLimitPolicies.AdminCheck, context =>

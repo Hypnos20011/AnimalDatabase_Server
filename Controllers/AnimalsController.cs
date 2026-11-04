@@ -1,4 +1,5 @@
 using AnimalDatabase.Api.Data;
+using AnimalDatabase.Api.Localization;
 using AnimalDatabase.Api.Models;
 using AnimalDatabase.Api.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -17,16 +18,16 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<Animal>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<Animal>>> GetAll([FromQuery] string? lang)
     {
-        var animals = await _repository.GetAllAsync();
+        var animals = await _repository.GetAllAsync(SupportedLanguages.Normalize(lang));
         return Ok(animals);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Animal>> GetById(int id)
+    public async Task<ActionResult<Animal>> GetById(int id, [FromQuery] string? lang)
     {
-        var animal = await _repository.GetByIdAsync(id);
+        var animal = await _repository.GetByIdAsync(id, SupportedLanguages.Normalize(lang));
         if (animal is null)
         {
             return NotFound();

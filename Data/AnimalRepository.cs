@@ -1,3 +1,4 @@
+using AnimalDatabase.Api.Localization;
 using AnimalDatabase.Api.Models;
 using AnimalDatabase.Api.Services;
 using Dapper;
@@ -8,7 +9,28 @@ namespace AnimalDatabase.Api.Data;
 public class AnimalRepository
 {
     private const string SelectAnimals =
-        "SELECT a.*, (SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) AS thumbnail_url FROM animals a";
+        "SELECT a.id," +
+        " a.created_at," +
+        " a.updated_at," +
+        "COALESCE(t.common_name, a.common_name) AS common_name, " +
+        "a.scientific_name," +
+        " a.family," +
+        " a.taxonomic_class," +
+        " a.is_domesticated," +
+        "a.size_length_cm_min," +
+        " a.size_length_cm_max," +
+        " a.size_height_cm_min," +
+        " a.size_height_cm_max," +
+        "a.weight_kg_min," +
+        " a.weight_kg_max," +
+        " a.lifespan_years_min," +
+        " a.lifespan_years_max,a.iucn_status," +
+        " COALESCE(t.habitat, a.habitat) AS habitat, a.habitat_type, " +
+        "COALESCE(t.range_region, a.range_region) AS range_region, " +
+        "COALESCE(t.profile, a.profile) AS profile, " +
+        "(SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) " +
+        "AS thumbnail_url FROM animals a" +
+        " LEFT JOIN animal_translations t ON t.animal_id = a.id AND t.language = @Language";
 
     private readonly string _connectionString;
 
@@ -18,19 +40,19 @@ public class AnimalRepository
                             ?? throw new InvalidOperationException("Connection string 'AnimalDatabase' not found.");
     }
 
-    public async Task<IReadOnlyList<Animal>> GetAllAsync()
+    public async Task<IReadOnlyList<Animal>> GetAllAsync(string language)
     {
         await using var connection = new MySqlConnection(_connectionString);
-        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} ORDER BY a.common_name");
+        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} ORDER BY common_name", new { Language = language });
         return rows.ToList();
     }
 
-    public async Task<Animal?> GetByIdAsync(int id)
+    public async Task<Animal?> GetByIdAsync(int id, string language)
     {
         await using var connection = new MySqlConnection(_connectionString);
         return await connection.QuerySingleOrDefaultAsync<Animal>(
             $"{SelectAnimals} WHERE a.id = @Id",
-            new { Id = id });
+            new { Id = id, Language = language });
     }
 
     public async Task<IReadOnlyList<AnimalImage>> GetImagesByAnimalIdAsync(int animalId)
@@ -68,7 +90,7 @@ public class AnimalRepository
         await InsertImagesAsync(connection, transaction, id, request.Images);
 
         await transaction.CommitAsync();
-        return (await GetByIdAsync(id))!;
+        return (await GetByIdAsync(id, SupportedLanguages.Default))!;
     }
 
     public async Task<Animal?> UpdateAsync(int id, CreateAnimalRequest request)
@@ -121,7 +143,7 @@ public class AnimalRepository
         await InsertImagesAsync(connection, transaction, id, request.Images);
 
         await transaction.CommitAsync();
-        return await GetByIdAsync(id);
+        return await GetByIdAsync(id, SupportedLanguages.Default);
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -172,7 +194,11 @@ public class AnimalRepository
                 INSERT INTO animal_images (animal_id, kind, url, caption, sort_order)
                 VALUES (@AnimalId, @Kind, @Url, @Caption, @SortOrder);
                 """,
-                new { AnimalId = animalId, image.Kind, Url = WikimediaUrl.Normalize(image.Url), image.Caption, SortOrder = sortOrder++ },
+                new
+                {
+                    AnimalId = animalId, image.Kind, Url = WikimediaUrl.Normalize(image.Url), image.Caption,
+                    SortOrder = sortOrder++
+                },
                 transaction);
         }
     }

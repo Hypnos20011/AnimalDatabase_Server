@@ -64,6 +64,23 @@ public class AnimalsController : ControllerBase
         return Ok(animal);
     }
 
+    [HttpPut("{id:int}/translations/{language}")]
+    [RequireAdminKey]
+    public async Task<IActionResult> SaveTranslation(int id, string language, AnimalTexts texts)
+    {
+        if (!SupportedLanguages.All.Contains(language) ||
+            language.Equals(SupportedLanguages.Default, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Invalid language");
+        }
+
+        var saved = await _repository.SaveTranslationAsync(id, SupportedLanguages.Normalize(language), texts);
+        if (!saved){
+            return NotFound();
+        }
+        return NoContent();
+    }
+
     [HttpDelete("{id:int}")]
     [RequireAdminKey]
     public async Task<IActionResult> Delete(int id)

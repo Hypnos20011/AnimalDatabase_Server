@@ -1,9 +1,11 @@
-﻿namespace AnimalDatabase.Api.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace AnimalDatabase.Api.Models;
 
 public class AnimalTexts
 {
-    public string? CommonName { get; set; }
-    public string? Habitat { get; set; }
-    public string? RangeRegion { get; set; }
+    [MaxLength(120)] public string? CommonName { get; set; }
+    [MaxLength(255)] public string? Habitat { get; set; }
+    [MaxLength(255)] public string? RangeRegion { get; set; }
     public string? Profile { get; set; }
 }

@@ -43,7 +43,8 @@ public class AnimalRepository
     public async Task<IReadOnlyList<Animal>> GetAllAsync(string language)
     {
         await using var connection = new MySqlConnection(_connectionString);
-        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} ORDER BY common_name", new { Language = language });
+        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} ORDER BY common_name",
+            new { Language = language });
         return rows.ToList();
     }
 
@@ -144,6 +145,31 @@ public class AnimalRepository
 
         await transaction.CommitAsync();
         return await GetByIdAsync(id, SupportedLanguages.Default);
+    }
+
+    public async Task<bool> SaveTranslationAsync(int id, string language, AnimalTexts texts)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+
+        var exists = await connection.ExecuteScalarAsync<int>
+        (
+            "SELECT COUNT(*) FROM animals WHERE id = @Id",
+            new { Id = id }
+        );
+        if (exists == 0)
+        {
+            return false;
+        }
+
+        await connection.ExecuteAsync(
+            """"
+            INSERT INTO animal_translations(animal_id, language, common_name, habitat, range_region, profile)
+            VALUES (@Id, @Language, @CommonName, @Habitat, @RangeRegion, @Profile)
+            ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat),  range_region = VALUES(range_region), profile = VALUES(profile)
+            """",
+            new { Id = id, Language = language, texts.CommonName, texts.Habitat, texts.RangeRegion, texts.Profile });
+
+        return true;
     }
 
     public async Task<bool> DeleteAsync(int id)

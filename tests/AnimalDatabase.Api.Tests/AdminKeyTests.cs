@@ -123,7 +123,7 @@ public class AdminKeyTests
             .Where(endpoint => endpoint.Controller == typeof(AnimalsController) && endpoint.Method != "GET")
             .ToList();
 
-        Assert.Equal(new[] { "DELETE", "POST", "PUT" }, writes.Select(endpoint => endpoint.Method).OrderBy(method => method));
+        Assert.Equal(new[] { "DELETE", "POST", "PUT", "PUT" }, writes.Select(endpoint => endpoint.Method).OrderBy(method => method));
         Assert.All(writes, endpoint => Assert.True(IsProtected(endpoint.Controller, endpoint.Action), endpoint.Action.Name));
     }
 

@@ -227,6 +227,7 @@ public class WikipediaImporter
         }
 
         result.ImageUrl = ChooseImage(imageTask.Result, imageInfoTask.Result, wikitext);
+        FillImageAttribution(result, imageInfoTask.Result);
 
         var lead = WikipediaText.ProfileFromLead(extract);
         var funFact = WikipediaText.FindFunFact(sections, extract);
@@ -488,6 +489,40 @@ public class WikipediaImporter
                    RegexOptions.IgnoreCase);
     }
 
+    internal static void FillImageAttribution(WikipediaImportResult result, Dictionary<string, ImageInfo> infos)
+    {
+        if (result.ImageUrl is null)
+        {
+            return;
+        }
+
+        var file = FileNameFromUrl(result.ImageUrl);
+        if (file is null || !infos.TryGetValue(FileKey(file), out var info))
+        {
+            return;
+        }
+
+        result.Attribution = Truncate(NormalizeSpace(info.Artist), 500);
+        var page = info.DescriptionUrl?.Split('?')[0];
+        if (page is not null
+            && Uri.TryCreate(page, UriKind.Absolute, out var uri)
+            && uri.Scheme == Uri.UriSchemeHttps)
+        {
+            result.SourcePageUrl = Truncate(page, 500);
+        }
+    }
+
+    private static string? NormalizeSpace(string? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        var trimmed = Regex.Replace(value, @"\s+", " ").Trim();
+        return trimmed.Length == 0 ? null : trimmed;
+    }
+
     private static string? FileNameFromUrl(string url)
     {
         var match = Regex.Match(url, @"/(?:thumb/)?[0-9a-f]/[0-9a-f]{2}/([^/?]+)");
@@ -610,7 +645,8 @@ public class WikipediaImporter
                 MetaValue(meta, "ImageDescription"),
                 MetaValue(meta, "Categories"),
                 MetaValue(meta, "Artist"),
-                MetaValue(meta, "DateTimeOriginal"));
+                MetaValue(meta, "DateTimeOriginal"),
+                GetString(ii, "descriptionurl"));
         }
 
         return infos;
@@ -934,5 +970,6 @@ public class WikipediaImporter
         string? Description,
         string? Categories,
         string? Artist,
-        string? Date);
+        string? Date,
+        string? DescriptionUrl = null);
 }

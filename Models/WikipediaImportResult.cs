@@ -17,6 +17,8 @@ public class WikipediaImportResult
     public string? RangeRegion { get; set; }
     public string? Profile { get; set; }
     public string? ImageUrl { get; set; }
+    public string? Attribution { get; set; }
+    public string? SourcePageUrl { get; set; }
     public string? SourceUrl { get; set; }
     public List<string> Warnings { get; set; } = new();
 }

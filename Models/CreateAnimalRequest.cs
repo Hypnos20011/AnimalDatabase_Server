@@ -46,6 +46,7 @@ public class CreateAnimalRequest : IValidatableObject
 
     [MaxLength(20000)] public string? Profile { get; set; }
 
+    // https only, matching the form in the frontend; the check lives in Validate below.
     [MaxLength(500)] [Url] public string? SourceUrl { get; set; }
 
     public List<CreateAnimalImageRequest> Images { get; set; } = new();
@@ -59,6 +60,12 @@ public class CreateAnimalRequest : IValidatableObject
             ("Weight", WeightKgMin, WeightKgMax, nameof(WeightKgMin)),
             ("Lifespan", LifespanYearsMin, LifespanYearsMax, nameof(LifespanYearsMin))
         ];
+
+        if (!string.IsNullOrEmpty(SourceUrl) &&
+            !(Uri.TryCreate(SourceUrl, UriKind.Absolute, out var source) && source.Scheme == Uri.UriSchemeHttps))
+        {
+            yield return new ValidationResult("Source link: only https:// links are allowed.", [nameof(SourceUrl)]);
+        }
 
         foreach (var range in ranges)
         {

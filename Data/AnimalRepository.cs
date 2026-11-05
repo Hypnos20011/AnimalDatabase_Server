@@ -232,12 +232,12 @@ public class AnimalRepository
         {
             await connection.ExecuteAsync(
                 """
-                INSERT INTO animal_images (animal_id, kind, url, caption, sort_order)
-                VALUES (@AnimalId, @Kind, @Url, @Caption, @SortOrder);
+                INSERT INTO animal_images (animal_id, kind, url, caption, attribution, source_page_url, sort_order)
+                VALUES (@AnimalId, @Kind, @Url, @Caption, @Attribution, @SourcePageUrl, @SortOrder);
                 """,
                 new
                 {
-                    AnimalId = animalId, image.Kind, Url = WikimediaUrl.Normalize(image.Url), image.Caption,
+                    AnimalId = animalId, image.Kind, Url = WikimediaUrl.Normalize(image.Url), image.Caption, image.Attribution, image.SourcePageUrl,
                     SortOrder = sortOrder++
                 },
                 transaction);

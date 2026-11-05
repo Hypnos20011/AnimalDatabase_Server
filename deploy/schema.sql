@@ -29,6 +29,8 @@ CREATE TABLE `animal_images` (
   `kind` varchar(20) NOT NULL,
   `url` varchar(500) NOT NULL,
   `caption` varchar(200) DEFAULT NULL,
+  `attribution` varchar(500) DEFAULT NULL,
+  `source_page_url` varchar(500) DEFAULT NULL,
   `sort_order` int(11) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),

@@ -172,6 +172,18 @@ public class AnimalRepository
         return true;
     }
 
+    public async Task<AnimalTexts?> GetTranslationAsync(int id, string language)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<AnimalTexts>(
+            """
+            SELECT common_name, habitat, range_region, profile
+            FROM animal_translations 
+            WHERE animal_id = @Id AND language = @Language
+            """,
+            new { Id = id, Language = language, });
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         await using var connection = new MySqlConnection(_connectionString);

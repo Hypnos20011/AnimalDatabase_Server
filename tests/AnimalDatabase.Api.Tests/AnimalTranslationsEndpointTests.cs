@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using AnimalDatabase.Api.Controllers;
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.Security;
 
 namespace AnimalDatabase.Api.Tests;
 
@@ -134,5 +136,35 @@ public class AnimalTranslationsEndpointTests
 
         Assert.NotEqual(HttpStatusCode.NoContent, response.StatusCode);
         Assert.NotEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static HttpRequestMessage Get(string language, int id = 1)
+    {
+        return new HttpRequestMessage(HttpMethod.Get, $"/api/animals/{id}/translations/{language}");
+    }
+
+    [Theory]
+    [InlineData("fr")]
+    [InlineData("xx")]
+    [InlineData("en")]
+    [InlineData("EN")]
+    public async Task Get_with_unsupported_or_source_language_returns_bad_request(string language)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        using var response = await client.SendAsync(Get(language));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("Invalid language", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public void Get_translation_does_not_require_the_admin_key()
+    {
+        var action = typeof(AnimalsController).GetMethod(nameof(AnimalsController.GetTranslation));
+        Assert.NotNull(action);
+        Assert.Null(action!.GetCustomAttributes(typeof(RequireAdminKeyAttribute), inherit: true).FirstOrDefault());
+        Assert.Null(typeof(AnimalsController).GetCustomAttributes(typeof(RequireAdminKeyAttribute), inherit: true).FirstOrDefault());
     }
 }

@@ -36,6 +36,24 @@ public class AnimalsController : ControllerBase
         return Ok(animal);
     }
 
+    [HttpGet("{id:int}/translations/{language}")]
+    public async Task<ActionResult<AnimalTexts>> GetTranslation(int id, string language)
+    {
+        if (!SupportedLanguages.All.Contains(language) ||
+            language.Equals(SupportedLanguages.Default, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Invalid language");
+        }
+
+        var texts = await _repository.GetTranslationAsync(id, SupportedLanguages.Normalize(language));
+        if (texts is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(texts);
+    }
+
     [HttpGet("{id:int}/images")]
     public async Task<ActionResult<IReadOnlyList<AnimalImage>>> GetImages(int id)
     {
@@ -75,9 +93,11 @@ public class AnimalsController : ControllerBase
         }
 
         var saved = await _repository.SaveTranslationAsync(id, SupportedLanguages.Normalize(language), texts);
-        if (!saved){
+        if (!saved)
+        {
             return NotFound();
         }
+
         return NoContent();
     }
 

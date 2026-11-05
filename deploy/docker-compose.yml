@@ -45,6 +45,8 @@ services:
       ConnectionStrings__AnimalDatabase: Server=mariadb;Port=3306;Database=${MARIADB_DATABASE:-animaldatabase};User=${APP_DB_USER:?Set APP_DB_USER in .env};Password=${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in .env}
       Admin__ApiKey: ${ADMIN_API_KEY:?Set ADMIN_API_KEY in .env}
       DeepL__ApiKey: ${DEEPL_API_KEY:?Set DEEPL_API_KEY in .env}
+      LibreTranslate__BaseUrl: ${LIBRETRANSLATE_BASE_URL:-}
+      LibreTranslate__ApiKey: ${LIBRETRANSLATE_API_KEY:-}
       ForwardedHeaders__KnownProxies__0: ${PROXY_IP:-172.30.0.10}
     networks:
       - web

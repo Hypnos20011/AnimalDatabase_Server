@@ -59,7 +59,7 @@ SELECT id, 'de', 'Fennek', 'Sanddünen und Sandwüste mit spärlicher Vegetation
 Fun fact: Das älteste Fennek-Männchen in Menschenobhut wurde 14 Jahre alt, das älteste Weibchen 13 Jahre.' FROM animals WHERE scientific_name = 'Vulpes zerda'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Fleischmanns Glasfrosch', 'Regenwaldvegetation an Bächen', 'Südmexiko bis Ecuador', 'Ein winziger, limettengrüner Baumfrosch mit durchscheinender Bauchhaut, durch die man von unten seine inneren Organe sehen kann.
+SELECT id, 'de', 'Fleischmann-Glasfrosch', 'Regenwaldvegetation an Bächen', 'Südmexiko bis Ecuador', 'Ein winziger, limettengrüner Baumfrosch mit durchscheinender Bauchhaut, durch die man von unten seine inneren Organe sehen kann.
 
 Fun fact: Das Männchen bewacht die Eier auf Blättern über Bächen und uriniert sogar auf sie, damit sie nicht austrocknen.' FROM animals WHERE scientific_name = 'Hyalinobatrachium fleischmanni'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
@@ -79,7 +79,7 @@ SELECT id, 'de', 'Großer Ameisenbär', NULL, 'Mittel- und Südamerika', 'Der Gr
 Fun fact: Anders als die Vorderfüße tragen die Hinterfüße an allen fünf Zehen kurze Krallen und setzen beim Gehen mit der ganzen Sohle auf (Sohlengänger).' FROM animals WHERE scientific_name = 'Myrmecophaga tridactyla'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Narcine entemedor', 'Flache Sandböden, oft in Riffnähe', 'Ostpazifik vom Golf von Kalifornien bis Panama', 'Narcine entemedor, im Englischen „Giant electric ray“ oder „Cortez electric ray“ genannt, ist ein Rochen aus der Familie Narcinidae, der im Ostpazifik vom Golf von Kalifornien bis Panama vorkommt. Er lebt im Flachwasser auf sandigem Grund und manchmal in der Nähe von Riffen.' FROM animals WHERE scientific_name = 'Narcine entemedor'
+SELECT id, 'de', 'Riesen-Zitterrochen', 'Flache Sandböden, oft in Riffnähe', 'Ostpazifik vom Golf von Kalifornien bis Panama', 'Narcine entemedor, im Englischen „Giant electric ray“ oder „Cortez electric ray“ genannt, ist ein Rochen aus der Familie Narcinidae, der im Ostpazifik vom Golf von Kalifornien bis Panama vorkommt. Er lebt im Flachwasser auf sandigem Grund und manchmal in der Nähe von Riffen.' FROM animals WHERE scientific_name = 'Narcine entemedor'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
 SELECT id, 'de', 'Goldkronen-Flughund', NULL, 'Philippinen', 'Der Goldkronen-Flughund ist eine Flughundart, die nur auf den Philippinen vorkommt. Seit seiner Erstbeschreibung im Jahr 1831 wurden drei Unterarten anerkannt, von denen eine ausgestorben ist.
@@ -125,7 +125,7 @@ SELECT id, 'de', 'Vorderindisches Schuppentier', 'Grasland und Sekundärwälder'
 Fun fact: Das auffälligste Merkmal des Schuppentiers ist sein massiver Schuppenpanzer, der die Oberseite des Gesichts und den ganzen Körper bedeckt, mit Ausnahme des Bauchs und der Innenseiten der Beine.' FROM animals WHERE scientific_name = 'Manis crassicaudata'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Indischer Roter Skorpion', 'Buschland, steinige Hügel, Ackerland und Plantagen', 'Großteil Indiens, Ostpakistan und das östliche Tiefland Nepals, neuerdings auch Sri Lanka', 'Hottentotta tamulus, der Indische Rote Skorpion, auch Ostindischer Skorpion genannt, ist eine Skorpionart aus der Familie der Buthidae. Er kommt im Großteil Indiens, im Osten Pakistans und im östlichen Tiefland Nepals vor und wurde neuerdings auch auf Sri Lanka nachgewiesen.
+SELECT id, 'de', 'Indischer roter Skorpion', 'Buschland, steinige Hügel, Ackerland und Plantagen', 'Großteil Indiens, Ostpakistan und das östliche Tiefland Nepals, neuerdings auch Sri Lanka', 'Hottentotta tamulus, der Indische Rote Skorpion, auch Ostindischer Skorpion genannt, ist eine Skorpionart aus der Familie der Buthidae. Er kommt im Großteil Indiens, im Osten Pakistans und im östlichen Tiefland Nepals vor und wurde neuerdings auch auf Sri Lanka nachgewiesen.
 
 Fun fact: Mit einem Anteil von 48,43 % war er mit Abstand die häufigste der sechs in dieser Studie erfassten Skorpionarten.' FROM animals WHERE scientific_name = 'Hottentotta tamulus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);

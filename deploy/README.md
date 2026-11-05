@@ -61,6 +61,7 @@ server and on x86 machines. To build an ARM64 image on an x86 PC:
 |---------------------------------------|---------------------------------------------|-------------------------------------------------------------|
 | `ConnectionStrings__AnimalDatabase`   | (none)                                      | Built by compose from `.env`                                |
 | `Admin__ApiKey`                       | (none)                                      | `ADMIN_API_KEY` from `.env`; without it editing is disabled |
+| `DeepL__ApiKey`                       | (none)                                      | `DEEPL_API_KEY` from `.env`; Translate button needs it |
 | `Spa__Enabled` / `Spa__RootPath`      | `true` / `wwwroot`                          | Serve the Angular build if `index.html` exists there        |
 | `Cors__AllowedOrigins__0`, `__1`, ... | none (Development: `http://localhost:4200`) | Extra origins allowed to call the API                       |
 | `ForwardedHeaders__KnownProxies__0`   | none (loopback is always trusted)           | Proxy IPs whose `X-Forwarded-For` is trusted                |

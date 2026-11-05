@@ -1,9 +1,16 @@
 name: animaldatabase
 
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   caddy:
     image: caddy:2
     restart: unless-stopped
+    logging: *logging
     depends_on:
       - api
     ports:
@@ -29,6 +36,7 @@ services:
         ui-src: ${UI_SOURCE:-../../AnimalDatabase_UI}
     image: animaldatabase-api:latest
     restart: unless-stopped
+    logging: *logging
     depends_on:
       mariadb:
         condition: service_healthy
@@ -36,6 +44,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__AnimalDatabase: Server=mariadb;Port=3306;Database=${MARIADB_DATABASE:-animaldatabase};User=${APP_DB_USER:?Set APP_DB_USER in .env};Password=${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in .env}
       Admin__ApiKey: ${ADMIN_API_KEY:?Set ADMIN_API_KEY in .env}
+      DeepL__ApiKey: ${DEEPL_API_KEY:?Set DEEPL_API_KEY in .env}
       ForwardedHeaders__KnownProxies__0: ${PROXY_IP:-172.30.0.10}
     networks:
       - web
@@ -44,6 +53,7 @@ services:
   mariadb:
     image: mariadb:11.8
     restart: unless-stopped
+    logging: *logging
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Set MARIADB_ROOT_PASSWORD in .env}
       MARIADB_DATABASE: ${MARIADB_DATABASE:-animaldatabase}
@@ -65,6 +75,7 @@ services:
   backup:
     image: mariadb:11.8
     restart: unless-stopped
+    logging: *logging
     depends_on:
       mariadb:
         condition: service_healthy

@@ -58,6 +58,21 @@ docker compose up -d --build
 docker compose up -d --no-deps --force-recreate api
 docker image prune -f >/dev/null
 docker compose ps
+domain=`$(grep -m1 '^DOMAIN=' .env | cut -d= -f2-)
+check_url() {
+  for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    code=`$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --resolve "`$domain:443:127.0.0.1" "https://`$domain`$1" || true)
+    if [ "`$code" = 200 ]; then
+      echo "Deploy check OK: `$1"
+      return 0
+    fi
+    sleep 5
+  done
+  echo "DEPLOY CHECK FAILED: `$1 answered HTTP `$code" >&2
+  return 1
+}
+check_url /
+check_url /api/animals
 "@
     $remoteScript = Join-Path $work 'redeploy.sh'
     [IO.File]::WriteAllText($remoteScript, ($remote -replace "`r`n", "`n"))

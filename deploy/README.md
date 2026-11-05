@@ -276,11 +276,47 @@ D:\AnimalDatabase.Api\deploy\redeploy.ps1
 ```
 
 It archives `master` of both repos, copies the archives over SSH, takes a backup, swaps the folders (keeping `.env`),
-runs `docker compose up -d --build` and prunes old images. Only committed changes are
+runs `docker compose up -d --build`, prunes old images and then checks that `/` and `/api/animals` answer 200 (it
+retries for about a minute and fails loudly if they don't; it does not roll back). Only committed changes are
 deployed. Options: `-Ref <branch>`, `-SkipBackup`, `-Server deploy@<ip>`, `-UiRepo <path>`.
 
 `schema.sql` is not re-applied to an existing database. Schema changes need an `ALTER TABLE` run by hand (see "Database
 shell" below).
+
+### Before you deploy: database scripts
+
+The API needs these scripts on the live database **before** the new code starts, or `/api/animals` fails. Run each one
+once, in this order. Check first with `SHOW COLUMNS FROM animals; SHOW TABLES;` and skip what is already there:
+
+| Script                                | What it does                                |
+|---------------------------------------|---------------------------------------------|
+| `Database/habitat_type.sql`           | Adds `animals.habitat_type`                 |
+| `Database/animal_translations.sql`    | Adds the `animal_translations` table        |
+| `Database/animal_translations_de.sql` | Loads the German texts                      |
+| `Database/weight_range.sql`           | Raises the weight limit to 9,999,999.99 kg  |
+| `Database/source_url.sql`             | Adds `animals.source_url`                   |
+
+Copy a script to the server and run it from the live `deploy` folder:
+
+```powershell
+scp D:\AnimalDatabase.Api\Database\source_url.sql deploy@49.12.226.169:/tmp/
+```
+
+```bash
+cd /opt/animaldatabase/AnimalDatabase_Server/deploy
+docker compose exec -T mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" "$MARIADB_DATABASE"' < /tmp/source_url.sql
+rm /tmp/source_url.sql
+```
+
+### Logs and security headers
+
+Every service keeps at most three 10 MB log files (`x-logging` in `docker-compose.yml`). The change applies when
+containers are recreated, so the first deploy with it may restart Caddy, MariaDB and the backup service.
+
+The Caddyfile sends `Content-Security-Policy-Report-Only`, so browsers only log violations in the console and nothing
+is blocked. Once the site, including the admin pages, shows no violations, rename the header to
+`Content-Security-Policy` to enforce it. The policy allows no inline scripts, which is why `inlineCritical` is turned
+off in the UI repo's `angular.json`.
 
 ## Backups and restore
 
@@ -313,6 +349,9 @@ docker rm -f -v adb-restore-test
 Result on 2026-10-23: no errors; tables `animals`, `animal_images`, `searches` all present; 18 / 18 / 98 rows,
 the same as live; Axolotl (11), Blobfish (22) and Greater blue-ringed octopus (27) match the live API, and an
 MD5 over all `animals` and `animal_images` rows is identical to live.
+
+This test is older than `animal_translations`, `habitat_type` and `source_url`. Repeat it after those reach the live
+database, and add `SELECT COUNT(*) FROM animal_translations` to the check.
 
 ### Copies on the PC's SSD
 
@@ -407,6 +446,10 @@ docker compose exec mariadb sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" "$M
 ```
 
 ## Refreshing schema.sql from the PC
+
+Don't reformat `schema.sql` or the files in `Database/`: formatters can change the text inside SQL values. The
+repository's `.editorconfig` turns Rider's formatter off for `*.sql`. A fresh dump replaces the hand-added section at
+the end of the current `schema.sql`, so your local database needs all the scripts above first.
 
 Run in PowerShell on the PC (the password is read from the prompt into an environment variable and
 never shown):

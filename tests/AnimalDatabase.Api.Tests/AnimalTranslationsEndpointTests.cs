@@ -52,7 +52,7 @@ public class AnimalTranslationsEndpointTests
     }
 
     [Theory]
-    [InlineData("fr")]
+    [InlineData("it")]
     [InlineData("xx")]
     [InlineData("en")]
     [InlineData("EN")]
@@ -144,7 +144,7 @@ public class AnimalTranslationsEndpointTests
     }
 
     [Theory]
-    [InlineData("fr")]
+    [InlineData("it")]
     [InlineData("xx")]
     [InlineData("en")]
     [InlineData("EN")]

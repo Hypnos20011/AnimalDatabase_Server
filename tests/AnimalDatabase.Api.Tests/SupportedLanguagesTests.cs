@@ -14,7 +14,8 @@ public class SupportedLanguagesTests
     }
 
     [Theory]
-    [InlineData("fr")]
+    [InlineData("it")]
+    [InlineData("fra")]
     [InlineData("deu")]
     [InlineData("de-AT")]
     public void Unsupported_language_falls_back_to_default(string language)
@@ -25,6 +26,7 @@ public class SupportedLanguagesTests
     [Theory]
     [InlineData("en", "en")]
     [InlineData("de", "de")]
+    [InlineData("fr", "fr")]
     public void Supported_language_is_kept(string language, string expected)
     {
         Assert.Equal(expected, SupportedLanguages.Normalize(language));
@@ -33,6 +35,7 @@ public class SupportedLanguagesTests
     [Theory]
     [InlineData("DE", "de")]
     [InlineData("En", "en")]
+    [InlineData("FR", "fr")]
     public void Supported_language_is_lowercased(string language, string expected)
     {
         Assert.Equal(expected, SupportedLanguages.Normalize(language));
@@ -45,10 +48,11 @@ public class SupportedLanguagesTests
     }
 
     [Fact]
-    public void All_contains_exactly_english_and_german()
+    public void All_contains_exactly_english_german_and_french()
     {
-        Assert.Equal(2, SupportedLanguages.All.Count);
+        Assert.Equal(3, SupportedLanguages.All.Count);
         Assert.Contains("en", SupportedLanguages.All);
         Assert.Contains("de", SupportedLanguages.All);
+        Assert.Contains("fr", SupportedLanguages.All);
     }
 }

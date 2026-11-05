@@ -45,12 +45,34 @@ services:
       ConnectionStrings__AnimalDatabase: Server=mariadb;Port=3306;Database=${MARIADB_DATABASE:-animaldatabase};User=${APP_DB_USER:?Set APP_DB_USER in .env};Password=${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in .env}
       Admin__ApiKey: ${ADMIN_API_KEY:?Set ADMIN_API_KEY in .env}
       DeepL__ApiKey: ${DEEPL_API_KEY:?Set DEEPL_API_KEY in .env}
-      LibreTranslate__BaseUrl: ${LIBRETRANSLATE_BASE_URL:-}
+      LibreTranslate__BaseUrl: ${LIBRETRANSLATE_BASE_URL:-http://libretranslate:5000/}
       LibreTranslate__ApiKey: ${LIBRETRANSLATE_API_KEY:-}
       ForwardedHeaders__KnownProxies__0: ${PROXY_IP:-172.30.0.10}
     networks:
       - web
       - db
+
+  libretranslate:
+    image: libretranslate/libretranslate:v1.9.6
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      LT_LOAD_ONLY: en,de
+      LT_THREADS: "1"
+      LT_DISABLE_WEB_UI: "true"
+      LT_DISABLE_FILES_TRANSLATION: "true"
+      LT_UPDATE_MODELS: "true"
+    volumes:
+      - libretranslate_models:/home/libretranslate/.local
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD-SHELL", "./venv/bin/python scripts/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 600s
+    networks:
+      - web
 
   mariadb:
     image: mariadb:11.8
@@ -105,3 +127,4 @@ volumes:
   caddy_data:
   caddy_config:
   mariadb_data:
+  libretranslate_models:

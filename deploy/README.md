@@ -2,12 +2,13 @@
 
 One Docker Compose stack runs the whole site on a single small server:
 
-| Service   | Image                          | Job                                                                 |
-|-----------|--------------------------------|---------------------------------------------------------------------|
-| `caddy`   | `caddy:2`                      | Public entry point on ports 80/443, automatic HTTPS (Let's Encrypt) |
-| `api`     | built from `deploy/Dockerfile` | ASP.NET Core API plus the Angular site from `wwwroot`, port 8080    |
-| `mariadb` | `mariadb:11.8`                 | Database, only reachable from the `api` and `backup` containers     |
-| `backup`  | `mariadb:11.8`                 | Nightly `mariadb-dump`, gzipped, kept for 14 days                   |
+| Service          | Image                               | Job                                                                 |
+|------------------|-------------------------------------|---------------------------------------------------------------------|
+| `caddy`          | `caddy:2`                           | Public entry point on ports 80/443, automatic HTTPS (Let's Encrypt) |
+| `api`            | built from `deploy/Dockerfile`      | ASP.NET Core API plus the Angular site from `wwwroot`, port 8080    |
+| `libretranslate` | `libretranslate/libretranslate:v1.9.6` | Optional DeepL fallback (en to de only); Docker network only, no host port |
+| `mariadb`        | `mariadb:11.8`                      | Database, only reachable from the `api` and `backup` containers     |
+| `backup`         | `mariadb:11.8`                      | Nightly `mariadb-dump`, gzipped, kept for 14 days                   |
 
 The browser only ever talks to one origin (`https://<your domain>`): Angular calls `/api/...`, which is the
 same server, so no CORS is needed in production. `/api/*` and `/swagger/*` are never answered with the
@@ -20,7 +21,7 @@ site's `index.html`; unknown API paths return a 404 JSON problem response. Swagg
 deploy/
   Dockerfile               multi-stage build: Node 22 (Angular), .NET 10 SDK (API), aspnet:10.0 runtime, non-root
   Dockerfile.dockerignore  keeps bin/obj/tests/.git out of the build context
-  docker-compose.yml       caddy + api + mariadb + backup, named volumes
+  docker-compose.yml       caddy + api + libretranslate + mariadb + backup, named volumes
   Caddyfile                site address comes from DOMAIN in .env
   .env.example             copy to .env and fill in (placeholders only, .env is git-ignored)
   schema.sql               schema + data of the local animaldatabase (no users, no grants)
@@ -61,9 +62,9 @@ server and on x86 machines. To build an ARM64 image on an x86 PC:
 |---------------------------------------|---------------------------------------------|-------------------------------------------------------------|
 | `ConnectionStrings__AnimalDatabase`   | (none)                                      | Built by compose from `.env`                                |
 | `Admin__ApiKey`                       | (none)                                      | `ADMIN_API_KEY` from `.env`; without it editing is disabled |
-| `DeepL__ApiKey`                       | (none)                                      | `DEEPL_API_KEY` from `.env`; Translate button needs it      |
-| `LibreTranslate__BaseUrl`             | (none)                                      | Optional fallback translator base URL (`LIBRETRANSLATE_BASE_URL`) |
-| `LibreTranslate__ApiKey`              | (none)                                      | Optional LibreTranslate API key (`LIBRETRANSLATE_API_KEY`)  |
+| `DeepL__ApiKey`                       | (none)                                      | `DEEPL_API_KEY` from `.env`; Translate button needs it (primary) |
+| `LibreTranslate__BaseUrl`             | `http://libretranslate:5000/`               | DeepL fallback; compose default points at the internal service. Set `LIBRETRANSLATE_BASE_URL=` empty to disable |
+| `LibreTranslate__ApiKey`              | (none)                                      | Unused unless you enable `LT_API_KEYS` on the LibreTranslate container (`LIBRETRANSLATE_API_KEY`) |
 | `Spa__Enabled` / `Spa__RootPath`      | `true` / `wwwroot`                          | Serve the Angular build if `index.html` exists there        |
 | `Cors__AllowedOrigins__0`, `__1`, ... | none (Development: `http://localhost:4200`) | Extra origins allowed to call the API                       |
 | `ForwardedHeaders__KnownProxies__0`   | none (loopback is always trusted)           | Proxy IPs whose `X-Forwarded-For` is trusted                |
@@ -74,6 +75,7 @@ Caddy gets the fixed address `172.30.0.10` (`PROXY_IP`) on the `web` network, an
 address the API trusts for `X-Forwarded-For`. Caddy replaces any `X-Forwarded-For` sent by the visitor,
 so the rate limiter sees the real visitor IP and cannot be fooled by a forged header.
 
+DeepL stays the primary translator. LibreTranslate is a fallback only: the `libretranslate` service listens on the Docker `web` network (no host port), loads only `en` and `de`, and is capped at about 768 MiB RAM. Leave `LIBRETRANSLATE_BASE_URL` unset to use the compose default, set it empty to turn the fallback off, or remove the service from compose if you do not want the container at all.
 Cache headers for the site: `index.html` is `no-cache`; hashed Angular files (`main-XXXXXXXX.js`,
 `styles-XXXXXXXX.css`, `chunk-...`) are `public, max-age=31536000, immutable`; anything else gets one hour.
 

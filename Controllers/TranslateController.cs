@@ -40,11 +40,11 @@ public class TranslateController : ControllerBase
         {
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "The character credit is used up");
         }
-        catch(HttpRequestException)
+        catch (HttpRequestException)
         {
             return StatusCode(StatusCodes.Status502BadGateway, "Could not reach Deepl");
         }
-        catch(TaskCanceledException)
+        catch (TaskCanceledException)
         {
             return StatusCode(StatusCodes.Status504GatewayTimeout, "Deepl took too long to answer");
         }

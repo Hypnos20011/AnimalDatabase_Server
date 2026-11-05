@@ -11,9 +11,10 @@ public static class WikimediaUrl
             return url;
         }
 
-        if (((uri.Host != "upload.wikimedia.org") && (uri.Host != "thumb.wikimedia.org")) || (!uri.AbsolutePath.Contains("/thumb/")))
+        if ((uri.Host != "upload.wikimedia.org" && uri.Host != "thumb.wikimedia.org") ||
+            !uri.AbsolutePath.Contains("/thumb/"))
         {
-           return url;
+            return url;
         }
 
         var newPath = Regex.Replace(uri.AbsolutePath, @"/\d+px-", "/1280px-");

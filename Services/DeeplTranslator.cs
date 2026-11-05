@@ -19,14 +19,14 @@ public class DeeplTranslator
         var body = await response.Content.ReadFromJsonAsync<DeeplResponse>();
         return body!.Translations.Select(x => x.Text).ToArray();
     }
-    
+
     private record DeeplRequest(
         string[] Text,
         [property: JsonPropertyName("source_lang")]
         string SourceLang,
         [property: JsonPropertyName("target_lang")]
         string TargetLang);
-    
+
     private record DeeplResponse(DeeplTranslation[] Translations);
 
     private record DeeplTranslation(string Text);

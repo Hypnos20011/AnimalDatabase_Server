@@ -6,35 +6,40 @@ public static class TraitMerger
 {
     public static void FillMissing(WikipediaImportResult result, TraitData traits, string sourceName)
     {
-        if (Disagrees(result.SizeLengthCmMin, result.SizeLengthCmMax, traits.SizeLengthCmMin, traits.SizeLengthCmMax))
+        var lengthMin = Round(traits.SizeLengthCmMin, WikipediaImporter.RoundLength);
+        var lengthMax = Round(traits.SizeLengthCmMax, WikipediaImporter.RoundLength);
+        var weightMin = Round(traits.WeightKgMin, WikipediaImporter.RoundWeight);
+        var weightMax = Round(traits.WeightKgMax, WikipediaImporter.RoundWeight);
+
+        if (Disagrees(result.SizeLengthCmMin, result.SizeLengthCmMax, lengthMin, lengthMax))
         {
             result.Warnings.Add(
                 $"Length: {sourceName} says " +
-                $"{Describe(traits.SizeLengthCmMin, traits.SizeLengthCmMax)}, " +
+                $"{Describe(lengthMin, lengthMax)}, " +
                 $"kept {Describe(result.SizeLengthCmMin, result.SizeLengthCmMax)}");
         }
 
         (result.SizeLengthCmMin, result.SizeLengthCmMax) = MergePair(
             result.SizeLengthCmMin,
             result.SizeLengthCmMax,
-            traits.SizeLengthCmMin,
-            traits.SizeLengthCmMax
+            lengthMin,
+            lengthMax
         );
 
 
-        if (Disagrees(result.WeightKgMin, result.WeightKgMax, traits.WeightKgMin, traits.WeightKgMax))
+        if (Disagrees(result.WeightKgMin, result.WeightKgMax, weightMin, weightMax))
         {
             result.Warnings.Add(
                 $"Weight: {sourceName} says " +
-                $"{Describe(traits.WeightKgMin, traits.WeightKgMax)}, " +
+                $"{Describe(weightMin, weightMax)}, " +
                 $"kept {Describe(result.WeightKgMin, result.WeightKgMax)}");
         }
 
         (result.WeightKgMin, result.WeightKgMax) = MergePair(
             result.WeightKgMin,
             result.WeightKgMax,
-            traits.WeightKgMin,
-            traits.WeightKgMax
+            weightMin,
+            weightMax
         );
 
 
@@ -55,6 +60,11 @@ public static class TraitMerger
         );
 
         result.Habitat ??= traits.Habitat;
+    }
+
+    private static decimal? Round(decimal? value, Func<decimal, decimal> round)
+    {
+        return value is null ? null : round(value.Value);
     }
 
     private static (int? Min, int? Max) MergePair(int? existingMin, int? existingMax,

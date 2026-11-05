@@ -27,6 +27,7 @@ public class Animal
     public string? HabitatType { get; set; }
     public string? RangeRegion { get; set; }
     public string? Profile { get; set; }
+    public string? SourceUrl { get; set; }
     public string? ThumbnailUrl { get; set; }
 
     public DateTime CreatedAt { get; set; }

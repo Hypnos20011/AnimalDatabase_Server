@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AnimalDatabase.Api.Models;
 
-public class CreateAnimalRequest
+public class CreateAnimalRequest : IValidatableObject
 {
     [Required] [MaxLength(120)] public string CommonName { get; set; } = string.Empty;
 
@@ -22,9 +22,9 @@ public class CreateAnimalRequest
 
     [Range(0, 999999.9)] public decimal? SizeHeightCmMax { get; set; }
 
-    [Range(0, 99999.99)] public decimal? WeightKgMin { get; set; }
+    [Range(0, 9999999.99)] public decimal? WeightKgMin { get; set; }
 
-    [Range(0, 99999.99)] public decimal? WeightKgMax { get; set; }
+    [Range(0, 9999999.99)] public decimal? WeightKgMax { get; set; }
 
     [Range(0, int.MaxValue)] public int? LifespanYearsMin { get; set; }
 
@@ -44,7 +44,29 @@ public class CreateAnimalRequest
 
     [MaxLength(255)] public string? RangeRegion { get; set; }
 
-    public string? Profile { get; set; }
+    [MaxLength(20000)] public string? Profile { get; set; }
+
+    [MaxLength(500)] [Url] public string? SourceUrl { get; set; }
 
     public List<CreateAnimalImageRequest> Images { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        (string Label, decimal? Min, decimal? Max, string Member)[] ranges =
+        [
+            ("Length", SizeLengthCmMin, SizeLengthCmMax, nameof(SizeLengthCmMin)),
+            ("Height", SizeHeightCmMin, SizeHeightCmMax, nameof(SizeHeightCmMin)),
+            ("Weight", WeightKgMin, WeightKgMax, nameof(WeightKgMin)),
+            ("Lifespan", LifespanYearsMin, LifespanYearsMax, nameof(LifespanYearsMin))
+        ];
+
+        foreach (var range in ranges)
+        {
+            if (range.Min > range.Max)
+            {
+                yield return new ValidationResult(
+                    $"{range.Label}: the minimum can't be larger than the maximum.", [range.Member]);
+            }
+        }
+    }
 }

@@ -6,6 +6,9 @@ namespace AnimalDatabase.Api.Services;
 
 public class EolTextParser
 {
+    private const string ValuePattern =
+        @"\s*([\d.,]+)(?:\s*to\s*([\d.,]+))?\s*(?:\((high|low)\))?\s*([a-z]+)";
+
     private static readonly Dictionary<string, decimal> MassToKg = new()
     {
         ["g"] = 0.001m,
@@ -50,10 +53,19 @@ public class EolTextParser
 
     private static (decimal? Min, decimal? Max) ReadRange(string text, string label, Dictionary<string, decimal> units)
     {
-        var match = Regex.Match(
-            text,
-            label + @":</strong>\s*([\d.,]+)(?:\s*to\s*([\d.,]+))?\s*(?:\((high|low)\))?\s*([a-z]+)"
-        );
+        return ReadValues(Regex.Match(text, label + ":</strong>" + ValuePattern), units);
+    }
+
+    private static (decimal? Min, decimal? Max) ReadLifespanRange(string text, string status,
+        Dictionary<string, decimal> units)
+    {
+        return ReadValues(
+            Regex.Match(text, "Range lifespan<br><span>Status: " + status + "</span>:</strong>" + ValuePattern),
+            units);
+    }
+
+    private static (decimal? Min, decimal? Max) ReadValues(Match match, Dictionary<string, decimal> units)
+    {
         if (!match.Success)
         {
             return (null, null);
@@ -86,41 +98,5 @@ public class EolTextParser
     private static decimal? ParseNumber(string text)
     {
         return decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var value) ? value : null;
-    }
-
-    private static (decimal? Min, decimal? Max) ReadLifespanRange(string text, string status,
-        Dictionary<string, decimal> units)
-    {
-        var match = Regex.Match(text, "Range lifespan<br><span>Status: " +
-                                      status +
-                                      @"</span>:</strong>\s*([\d.,]+)(?:\s*to\s*([\d.,]+))?\s*(?:\((high|low)\))?\s*([a-z]+)"
-        );
-        if (!match.Success)
-        {
-            return (null, null);
-        }
-
-        if (!units.TryGetValue(match.Groups[4].Value, out var factor))
-        {
-            return (null, null);
-        }
-
-        var first = ParseNumber(match.Groups[1].Value) * factor;
-        if (match.Groups[2].Success)
-        {
-            return (first, ParseNumber(match.Groups[2].Value) * factor);
-        }
-
-        if (match.Groups[3].Value == "low")
-        {
-            return (first, null);
-        }
-
-        if (match.Groups[3].Value == "high")
-        {
-            return (null, first);
-        }
-
-        return (first, first);
     }
 }

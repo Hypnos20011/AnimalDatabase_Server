@@ -121,4 +121,37 @@ public class TraitMergerTests
         Assert.StartsWith("Length:", result.Warnings[0]);
         Assert.StartsWith("Lifespan:", result.Warnings[1]);
     }
+
+    [Fact]
+    public void Rounds_values_so_they_fit_the_database_and_the_form()
+    {
+        var result = new WikipediaImportResult();
+        var traits = new TraitData { SizeLengthCmMax = 12.34m, WeightKgMax = 1.2345m };
+
+        TraitMerger.FillMissing(result, traits, "FishBase/SeaLifeBase");
+
+        Assert.Equal(12.3m, result.SizeLengthCmMax);
+        Assert.Equal(1.23m, result.WeightKgMax);
+    }
+
+    [Fact]
+    public void A_real_weight_under_five_grams_does_not_become_zero()
+    {
+        var result = new WikipediaImportResult();
+
+        TraitMerger.FillMissing(result, new TraitData { WeightKgMax = 0.003m }, "AnAge");
+
+        Assert.Equal(0.01m, result.WeightKgMax);
+    }
+
+    [Fact]
+    public void Leaves_the_shared_source_data_unchanged()
+    {
+        var traits = new TraitData { SizeLengthCmMax = 12.34m, WeightKgMax = 0.003m };
+
+        TraitMerger.FillMissing(new WikipediaImportResult(), traits, "AnAge");
+
+        Assert.Equal(12.34m, traits.SizeLengthCmMax);
+        Assert.Equal(0.003m, traits.WeightKgMax);
+    }
 }

@@ -28,6 +28,7 @@ public class AnimalRepository
         " COALESCE(t.habitat, a.habitat) AS habitat, a.habitat_type, " +
         "COALESCE(t.range_region, a.range_region) AS range_region, " +
         "COALESCE(t.profile, a.profile) AS profile, " +
+        "a.source_url, " +
         "(SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) " +
         "AS thumbnail_url FROM animals a" +
         " LEFT JOIN animal_translations t ON t.animal_id = a.id AND t.language = @Language";
@@ -77,12 +78,12 @@ public class AnimalRepository
                 common_name, scientific_name, family, taxonomic_class, is_domesticated,
                 size_length_cm_min, size_length_cm_max, size_height_cm_min, size_height_cm_max,
                 weight_kg_min, weight_kg_max, lifespan_years_min, lifespan_years_max,
-                iucn_status, habitat, habitat_type, range_region, profile)
+                iucn_status, habitat, habitat_type, range_region, profile, source_url)
             VALUES (
                 @CommonName, @ScientificName, @Family, @TaxonomicClass, @IsDomesticated,
                 @SizeLengthCmMin, @SizeLengthCmMax, @SizeHeightCmMin, @SizeHeightCmMax,
                 @WeightKgMin, @WeightKgMax, @LifespanYearsMin, @LifespanYearsMax,
-                @IucnStatus, @Habitat, @HabitatType, @RangeRegion, @Profile);
+                @IucnStatus, @Habitat, @HabitatType, @RangeRegion, @Profile, @SourceUrl);
             SELECT LAST_INSERT_ID();
             """,
             ToParameters(request),
@@ -131,7 +132,8 @@ public class AnimalRepository
                 habitat = @Habitat,
                 habitat_type = @HabitatType,
                 range_region = @RangeRegion,
-                profile = @Profile
+                profile = @Profile,
+                source_url = @SourceUrl
             WHERE id = @Id;
             """,
             parameters,
@@ -181,7 +183,7 @@ public class AnimalRepository
             FROM animal_translations 
             WHERE animal_id = @Id AND language = @Language
             """,
-            new { Id = id, Language = language, });
+            new { Id = id, Language = language });
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -214,7 +216,8 @@ public class AnimalRepository
             request.Habitat,
             request.HabitatType,
             request.RangeRegion,
-            request.Profile
+            request.Profile,
+            request.SourceUrl
         });
     }
 

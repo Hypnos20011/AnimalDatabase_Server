@@ -61,7 +61,9 @@ server and on x86 machines. To build an ARM64 image on an x86 PC:
 |---------------------------------------|---------------------------------------------|-------------------------------------------------------------|
 | `ConnectionStrings__AnimalDatabase`   | (none)                                      | Built by compose from `.env`                                |
 | `Admin__ApiKey`                       | (none)                                      | `ADMIN_API_KEY` from `.env`; without it editing is disabled |
-| `DeepL__ApiKey`                       | (none)                                      | `DEEPL_API_KEY` from `.env`; Translate button needs it |
+| `DeepL__ApiKey`                       | (none)                                      | `DEEPL_API_KEY` from `.env`; Translate button needs it      |
+| `LibreTranslate__BaseUrl`             | (none)                                      | Optional fallback translator base URL (`LIBRETRANSLATE_BASE_URL`) |
+| `LibreTranslate__ApiKey`              | (none)                                      | Optional LibreTranslate API key (`LIBRETRANSLATE_API_KEY`)  |
 | `Spa__Enabled` / `Spa__RootPath`      | `true` / `wwwroot`                          | Serve the Angular build if `index.html` exists there        |
 | `Cors__AllowedOrigins__0`, `__1`, ... | none (Development: `http://localhost:4200`) | Extra origins allowed to call the API                       |
 | `ForwardedHeaders__KnownProxies__0`   | none (loopback is always trusted)           | Proxy IPs whose `X-Forwarded-For` is trusted                |
@@ -288,13 +290,13 @@ shell" below).
 The API needs these scripts on the live database **before** the new code starts, or `/api/animals` fails. Run each one
 once, in this order. Check first with `SHOW COLUMNS FROM animals; SHOW TABLES;` and skip what is already there:
 
-| Script                                | What it does                                |
-|---------------------------------------|---------------------------------------------|
-| `Database/habitat_type.sql`           | Adds `animals.habitat_type`                 |
-| `Database/animal_translations.sql`    | Adds the `animal_translations` table        |
-| `Database/animal_translations_de.sql` | Loads the German texts                      |
-| `Database/weight_range.sql`           | Raises the weight limit to 9,999,999.99 kg  |
-| `Database/source_url.sql`             | Adds `animals.source_url`                   |
+| Script                                | What it does                               |
+|---------------------------------------|--------------------------------------------|
+| `Database/habitat_type.sql`           | Adds `animals.habitat_type`                |
+| `Database/animal_translations.sql`    | Adds the `animal_translations` table       |
+| `Database/animal_translations_de.sql` | Loads the German texts                     |
+| `Database/weight_range.sql`           | Raises the weight limit to 9,999,999.99 kg |
+| `Database/source_url.sql`             | Adds `animals.source_url`                  |
 
 Copy a script to the server and run it from the live `deploy` folder:
 

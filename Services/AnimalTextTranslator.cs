@@ -6,11 +6,11 @@ namespace AnimalDatabase.Api.Services;
 public class AnimalTextTranslator
 {
     private static readonly Regex FunFactMarker = new(@"\s*Fun fact:\s*", RegexOptions.IgnoreCase);
-    private readonly DeeplTranslator _deepl;
+    private readonly IBatchTranslator _batchTranslator;
 
-    public AnimalTextTranslator(DeeplTranslator deepl)
+    public AnimalTextTranslator(IBatchTranslator batchTranslator)
     {
-        _deepl = deepl;
+        _batchTranslator = batchTranslator;
     }
 
     public async Task<AnimalTexts> TranslateAsync(AnimalTexts english)
@@ -20,7 +20,7 @@ public class AnimalTextTranslator
         var funFact = marker.Success ? english.Profile![(marker.Index + marker.Length)..] : null;
         string?[] pieces = [english.CommonName, english.Habitat, english.RangeRegion, description, funFact];
         var toSend = pieces.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p!).ToArray();
-        var translated = toSend.Length == 0 ? [] : await _deepl.TranslateAsync(toSend);
+        var translated = toSend.Length == 0 ? [] : await _batchTranslator.TranslateAsync(toSend);
         var next = 0;
         var german = pieces.Select(p => string.IsNullOrWhiteSpace(p) ? null : translated[next++]).ToArray();
 

@@ -42,11 +42,11 @@ public class TranslateController : ControllerBase
         }
         catch (HttpRequestException)
         {
-            return StatusCode(StatusCodes.Status502BadGateway, "Could not reach Deepl");
+            return StatusCode(StatusCodes.Status502BadGateway, "Could not reach the translation service");
         }
         catch (TaskCanceledException)
         {
-            return StatusCode(StatusCodes.Status504GatewayTimeout, "Deepl took too long to answer");
+            return StatusCode(StatusCodes.Status504GatewayTimeout, "The translation service took too long to answer");
         }
     }
 }

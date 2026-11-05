@@ -2,7 +2,7 @@
 
 namespace AnimalDatabase.Api.Services;
 
-public class DeeplTranslator
+public class DeeplTranslator : IBatchTranslator
 {
     private readonly HttpClient _http;
 

@@ -38,7 +38,24 @@ builder.Services.AddHttpClient<DeeplTranslator>(client =>
         new AuthenticationHeaderValue("DeepL-Auth-Key", builder.Configuration["DeepL:ApiKey"]);
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddTransient<IBatchTranslator>(sp =>
+{
+    var primary = sp.GetRequiredService<DeeplTranslator>();
+    var baseUrl = sp.GetRequiredService<IConfiguration>()["LibreTranslate:BaseUrl"];
+    IBatchTranslator? fallback = string.IsNullOrWhiteSpace(baseUrl) ? null : sp.GetRequiredService<LibreTranslateTranslator>();
+    return new FallbackBatchTranslator(primary, fallback);
+});
 builder.Services.AddTransient<AnimalTextTranslator>();
+builder.Services.AddHttpClient<LibreTranslateTranslator>(client =>
+{
+    var baseUrl = builder.Configuration["LibreTranslate:BaseUrl"];
+    if (!string.IsNullOrWhiteSpace(baseUrl))
+    {
+        client.BaseAddress = new Uri(baseUrl);
+    }
+
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 
 builder.Services.Configure<JsonOptions>(options =>
 {

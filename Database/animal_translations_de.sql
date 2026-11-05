@@ -26,9 +26,9 @@ SELECT id, 'de', 'Binturong', 'Vorgebirge oder bewaldete Hügel', 'Süd- und Sü
 Fun fact: Sein Körperbau ist einzigartig: Er besitzt Moschusdrüsen, die nach Popcorn riechen, und einen langen, buschigen Greifschwanz.' FROM animals WHERE scientific_name = 'Arctictis binturong'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Blobfisch', 'Tiefe Gewässer', 'Küsten des australischen Festlands und Tasmaniens', 'Psychrolutes marcidus, auch Glattkopf-Blobfisch oder einfach Blobfisch genannt, ist ein Tiefseefisch aus der Familie der Dickkopf-Groppen (Psychrolutidae). Er lebt in den tiefen Gewässern vor den Küsten des australischen Festlands und Tasmaniens sowie in den Gewässern Neuseelands.
+SELECT id, 'de', 'Blobfisch', 'Tiefe Gewässer', 'Küsten des australischen Festlands, Tasmaniens und Neuseelands', 'Psychrolutes marcidus, auch Glattkopf-Blobfisch oder einfach Blobfisch genannt, ist ein Tiefseefisch aus der Familie der Dickkopf-Groppen (Psychrolutidae). Er lebt in den tiefen Gewässern vor den Küsten des australischen Festlands und Tasmaniens sowie in den Gewässern Neuseelands.
 
-Fun Fact: Das Fleisch des Blobfischs besteht hauptsächlich aus einer gallertartigen Masse mit sehr feinen, weichen Knochen. So übersteht der Fisch den hohen Druck und kann in großen Tiefen knapp über dem Meeresboden schweben, ohne viel Energie aufzuwenden.' FROM animals WHERE scientific_name = 'Psychrolutes marcidus'
+Fun fact: Das Fleisch des Blobfischs besteht hauptsächlich aus einer gallertartigen Masse mit sehr feinen, weichen Knochen. So übersteht der Fisch den hohen Druck und kann in großen Tiefen knapp über dem Meeresboden schweben, ohne viel Energie aufzuwenden.' FROM animals WHERE scientific_name = 'Psychrolutes marcidus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
 SELECT id, 'de', 'Nebelparder', 'Dichter, immergrüner tropischer Primärwald, vom Vorgebirge bis etwa 1450 m', 'Vom Himalaya über Nordostindien und Bhutan bis zum südostasiatischen Festland und nach Südchina', 'Der Nebelparder, auch Festland-Nebelparder genannt, ist eine Wildkatze mit großen, dunkelgrauen Flecken sowie unregelmäßigen Tupfen und Streifen, die an Wolken erinnern. Die Kopf-Rumpf-Länge beträgt 68,6 bis 108 cm, dazu kommt ein 61 bis 91 cm langer Schwanz, der beim Klettern in Bäumen dem Gleichgewicht dient.
@@ -64,7 +64,7 @@ SELECT id, 'de', 'Fleischmann-Glasfrosch', 'Regenwaldvegetation an Bächen', 'S�
 Fun fact: Das Männchen bewacht die Eier auf Blättern über Bächen und uriniert sogar auf sie, damit sie nicht austrocknen.' FROM animals WHERE scientific_name = 'Hyalinobatrachium fleischmanni'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Gangesgavial', 'Sandige und feuchte Ufer', NULL, 'Der Gangesgavial, auch Gavial oder Gharial genannt und als fischfressendes Krokodil bekannt, gehört zur Familie der Gaviale (Gavialidae) und zählt zu den längsten heute lebenden Krokodilen. Ausgewachsene Weibchen messen 2,6–4,5 m, Männchen 3–6 m.
+SELECT id, 'de', 'Gangesgavial', 'Flüsse und feuchte Sandbänke zum Sonnen und Nisten', 'Flüsse des nördlichen Indischen Subkontinents (vor allem Indien und Nepal)', 'Der Gangesgavial, auch Gavial oder Gharial genannt und als fischfressendes Krokodil bekannt, gehört zur Familie der Gaviale (Gavialidae) und zählt zu den längsten heute lebenden Krokodilen. Ausgewachsene Weibchen messen 2,6–4,5 m, Männchen 3–6 m.
 
 Fun fact: Die ältesten bekannten Darstellungen des Gangesgavials sind etwa 4000 Jahre alt und stammen aus dem Industal.' FROM animals WHERE scientific_name = 'Gavialis gangeticus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
@@ -74,7 +74,7 @@ SELECT id, 'de', 'Riesenschnurfüßer', 'Wälder', 'Ostafrika (Mosambik bis Keni
 Fun fact: Er hat etwa 256 Beine; da sich die Zahl der Beine mit jeder Häutung ändert, kann sie von Tier zu Tier verschieden sein.' FROM animals WHERE scientific_name = 'Archispirostreptus gigas'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Großer Ameisenbär', NULL, 'Mittel- und Südamerika', 'Der Große Ameisenbär ist ein großes, insektenfressendes Säugetier aus Mittel- und Südamerika. Er ist die größte der vier heute lebenden Ameisenbärenarten, die zusammen mit den Faultieren zur Ordnung der Zahnarmen (Pilosa) gestellt werden.
+SELECT id, 'de', 'Großer Ameisenbär', NULL, 'Mittel- und Südamerika', 'Der Große Ameisenbär ist ein großes, insektenfressendes Säugetier aus Mittel- und Südamerika. Er ist der größte unter den heute lebenden Ameisenbären (Großer Ameisenbär, Tamanduas und mehrere Zwergameisenbären-Arten), die zusammen mit den Faultieren zur Ordnung der Zahnarmen (Pilosa) gestellt werden.
 
 Fun fact: Anders als die Vorderfüße tragen die Hinterfüße an allen fünf Zehen kurze Krallen und setzen beim Gehen mit der ganzen Sohle auf (Sohlengänger).' FROM animals WHERE scientific_name = 'Myrmecophaga tridactyla'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
@@ -127,10 +127,10 @@ ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habi
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
 SELECT id, 'de', 'Indischer roter Skorpion', 'Buschland, steinige Hügel, Ackerland und Plantagen', 'Großteil Indiens, Ostpakistan und das östliche Tiefland Nepals, neuerdings auch Sri Lanka', 'Hottentotta tamulus, der Indische Rote Skorpion, auch Ostindischer Skorpion genannt, ist eine Skorpionart aus der Familie der Buthidae. Er kommt im Großteil Indiens, im Osten Pakistans und im östlichen Tiefland Nepals vor und wurde neuerdings auch auf Sri Lanka nachgewiesen.
 
-Fun fact: Mit einem Anteil von 48,43 % war er mit Abstand die häufigste der sechs in dieser Studie erfassten Skorpionarten.' FROM animals WHERE scientific_name = 'Hottentotta tamulus'
+Fun fact: Er zählt zu den medizinisch bedeutsamsten Skorpionen in Indien.' FROM animals WHERE scientific_name = 'Hottentotta tamulus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Japanische Riesenkrabbe', 'Spalten und Löcher in den tieferen Bereichen des Meeres', 'Präfektur Iwate und vor Su-ao in Taiwan', 'Die Japanische Riesenkrabbe ist eine Meereskrabbe und die größte Krabbe in den Gewässern um Japan. Mit einer Spannweite von etwa 3,75 Metern hat sie die größte Beinspannweite aller Gliederfüßer.
+SELECT id, 'de', 'Japanische Riesenkrabbe', 'Spalten und Löcher in den tieferen Bereichen des Meeres', 'Von der Präfektur Iwate (Japan) bis zu den Gewässern vor Su-ao (Taiwan)', 'Die Japanische Riesenkrabbe ist eine Meereskrabbe und die größte Krabbe in den Gewässern um Japan. Mit einer Spannweite von etwa 3,75 Metern hat sie die größte Beinspannweite aller Gliederfüßer.
 
 Fun fact: Die Japanische Riesenkrabbe häutet sich auf besondere Weise: Der Vorgang dauert etwa 100 Minuten, in denen sie sich nicht bewegen kann; er beginnt am hinteren Teil des Panzers und endet mit den Laufbeinen.' FROM animals WHERE scientific_name = 'Macrocheira kaempferi'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
@@ -171,7 +171,7 @@ INSERT INTO animal_translations (animal_id, language, common_name, habitat, rang
 SELECT id, 'de', 'Laucharassari', 'Feuchter Bergwald', 'Bergregionen von Südmexiko bis Südpanama', 'Der Laucharassari, auch Waglers Arassari genannt, ist eine Vogelart aus der Familie der Tukane (Ramphastidae). Er kommt in Bergregionen von Südmexiko bis Südpanama vor.' FROM animals WHERE scientific_name = 'Aulacorhynchus prasinus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Nördlicher Tamandua', NULL, 'Tropische und subtropische Wälder von Südmexiko durch Mittelamerika', 'Der Nördliche Tamandua ist eine Tamandua-Art, also ein Ameisenbär aus der Familie Myrmecophagidae.
+SELECT id, 'de', 'Nördlicher Tamandua', NULL, 'Südmexiko durch Mittelamerika bis zum nordwestlichen Südamerika', 'Der Nördliche Tamandua ist eine Tamandua-Art, also ein Ameisenbär aus der Familie Myrmecophagidae.
 
 Fun fact: Er kann bis zu 9000 Insekten am Tag aus 50 bis 80 verschiedenen Nestern fressen, die er am Geruch erkennt und dann mit seinen kräftigen Krallen aufgräbt.' FROM animals WHERE scientific_name = 'Tamandua mexicana'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
@@ -183,7 +183,7 @@ ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habi
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
 SELECT id, 'de', 'Schmuck-Geisterpfeifenfisch', 'Strömungsreiche Riffkanten, zwischen Gorgonien und Haarsternen', 'Indowestpazifik, vom Roten Meer bis Tonga', 'Solenostomus paradoxus, der Schmuck-Geisterpfeifenfisch oder Harlekin-Geisterpfeifenfisch, ist ein Geisterpfeifenfisch aus der Familie Solenostomidae. Der Artname leitet sich vom griechischen paradoxos ab und bezieht sich auf das ungewöhnliche Aussehen des Fisches.
 
-Fun fact: Doch anders als bei ihren Verwandten entwickeln sich die Embryonen von Solenostomus am Weibchen.' FROM animals WHERE scientific_name = 'Solenostomus paradoxus'
+Fun fact: Anders als bei ihren Verwandten entwickeln sich die Embryonen von Solenostomus am Weibchen.' FROM animals WHERE scientific_name = 'Solenostomus paradoxus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
 SELECT id, 'de', 'Schmuckbaumnatter', 'Feuchtwald, baumbewohnend', 'Thailand, Indonesien, Brunei, Indien, Malaysia, Myanmar, Philippinen und Singapur', 'Die Schmuckbaumnatter, auch Paradies-Flugschlange genannt, ist eine Natternart aus Südostasien. Wie alle Arten der Gattung Chrysopelea kann sie gleiten, indem sie ihren Körper mithilfe der Rippen zu einem flachen Band ausbreitet.
@@ -229,9 +229,9 @@ SELECT id, 'de', 'Kurzschnabeligel', 'Fast alle Lebensräume Australiens, von W�
 Fun fact: Ameisenigel können elektrische Felder von 1,8 mV/cm wahrnehmen – 1000-mal empfindlicher als der Mensch – und graben sogar vergrabene Batterien aus.' FROM animals WHERE scientific_name = 'Tachyglossus aculeatus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Zwergameisenbären', 'Verschiedene Waldtypen', 'Nördlicher Atlantischer Regenwald im Osten Brasiliens', 'Der Zwergameisenbär bewegt sich langsam und ernährt sich hauptsächlich von Ameisen, von denen er 700 bis 5000 am Tag frisst. Zwergameisenbären fressen außerdem Wespen und deren Puppen; sie überfallen die Wespennester nachts, wenn die Wespen träge sind und sich nicht wehren können.
+SELECT id, 'de', 'Zwergameisenbären', 'Verschiedene Waldtypen', 'Südmexiko durch Mittelamerika bis zum nördlichen Südamerika und Trinidad', 'Der Zwergameisenbär bewegt sich langsam und ernährt sich hauptsächlich von Ameisen, von denen er 700 bis 5000 am Tag frisst. Zwergameisenbären fressen außerdem Wespen und deren Puppen; sie überfallen die Wespennester nachts, wenn die Wespen träge sind und sich nicht wehren können.
 
-Fun fact: Weil er den Samenfasern dieser Bäume ähnelt, kann er sich in ihnen tarnen und so Angriffen von Greifvögeln wie Habichten und vor allem Harpyien entgehen.' FROM animals WHERE scientific_name = 'Cyclopes'
+Fun fact: Weil er den Samenfasern der Kapok- oder Seidenwollbäume (*Ceiba*) ähnelt, kann er sich in diesen Bäumen tarnen und so Angriffen von Greifvögeln wie Habichten und vor allem Harpyien entgehen.' FROM animals WHERE scientific_name = 'Cyclopes'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
 SELECT id, 'de', 'Helmkasuar', 'Tropische Regenwälder', 'Indonesien, Papua-Neuguinea und Nordostaustralien', 'Der Helmkasuar, auch Doppellappenkasuar oder Australischer Kasuar genannt, ist ein großer, flugunfähiger, überwiegend schwarzer Vogel aus Indonesien, Papua-Neuguinea und dem Nordosten Australiens. Er ist eine der drei lebenden Kasuararten, neben dem Bennettkasuar und dem Einlappenkasuar.
@@ -252,7 +252,7 @@ SELECT id, 'de', 'Malaien-Gleitflieger', 'Tropischer Regenwald, Plantagen und G�
 Fun fact: Die stärksten Landekräfte treten nach kurzen Gleitflügen auf; längere Gleitflüge enden sanfter, weil er seinen Flug aerodynamisch abbremsen kann.' FROM animals WHERE scientific_name = 'Galeopterus variegatus'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);
 INSERT INTO animal_translations (animal_id, language, common_name, habitat, range_region, profile)
-SELECT id, 'de', 'Sunda-Plumplori', 'Tropischer Tieflandregenwald und Waldränder', 'Tropische Regenwälder mit geschlossenem Kronendach', 'Der Sunda-Plumplori, auch Großer Plumplori genannt, ist ein Feuchtnasenprimat aus der Gattung der Plumploris, der in Indonesien, Westmalaysia, Südthailand und Singapur vorkommt.
+SELECT id, 'de', 'Sunda-Plumplori', 'Tropischer Tieflandregenwald und Waldränder', 'Indonesien, Westmalaysia, Südthailand und Singapur', 'Der Sunda-Plumplori, auch Großer Plumplori genannt, ist ein Feuchtnasenprimat aus der Gattung der Plumploris, der in Indonesien, Westmalaysia, Südthailand und Singapur vorkommt.
 
 Fun fact: Die meiste Zeit verbringt er mit dem Fressen von Phloemsaft (34,9 %), Blütennektar und nektarliefernden Pflanzenteilen (31,7 %) sowie Früchten (22,5 %).' FROM animals WHERE scientific_name = 'Nycticebus coucang'
 ON DUPLICATE KEY UPDATE common_name = VALUES(common_name), habitat = VALUES(habitat), range_region = VALUES(range_region), profile = VALUES(profile);

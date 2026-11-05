@@ -313,10 +313,12 @@ rm /tmp/source_url.sql
 Every service keeps at most three 10 MB log files (`x-logging` in `docker-compose.yml`). The change applies when
 containers are recreated, so the first deploy with it may restart Caddy, MariaDB and the backup service.
 
-The Caddyfile sends `Content-Security-Policy-Report-Only`, so browsers only log violations in the console and nothing
-is blocked. Once the site, including the admin pages, shows no violations, rename the header to
-`Content-Security-Policy` to enforce it. The policy allows no inline scripts, which is why `inlineCritical` is turned
-off in the UI repo's `angular.json`.
+The Caddyfile sends an enforcing `Content-Security-Policy`. It allows no inline scripts, which is why `inlineCritical`
+is turned off in the UI repo's `angular.json`. If it ever breaks the site, rename the header to
+`Content-Security-Policy-Report-Only` so browsers only log violations.
+
+`redeploy.ps1` doesn't recreate Caddy, so after changing the Caddyfile run this in the live `deploy` folder:
+`docker compose up -d --no-deps --force-recreate caddy`.
 
 ## Backups and restore
 

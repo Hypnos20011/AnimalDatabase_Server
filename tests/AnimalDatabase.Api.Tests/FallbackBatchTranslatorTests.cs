@@ -16,11 +16,13 @@ public class FallbackBatchTranslatorTests
 
         public int Calls { get; private set; }
         public string[]? LastTexts { get; private set; }
+        public string? LastTarget { get; private set; }
 
-        public Task<string[]> TranslateAsync(string[] texts)
+        public Task<string[]> TranslateAsync(string[] texts, string targetLanguage = "de")
         {
             Calls++;
             LastTexts = texts;
+            LastTarget = targetLanguage;
             return _impl(texts);
         }
     }
@@ -92,5 +94,22 @@ public class FallbackBatchTranslatorTests
 
         Assert.Equal((HttpStatusCode)456, error.StatusCode);
         Assert.Equal(1, primary.Calls);
+    }
+
+    [Fact]
+    public async Task French_target_is_passed_to_primary_and_fallback()
+    {
+        var primary = new StubBatchTranslator(_ => throw new HttpRequestException("quota", null, (HttpStatusCode)456));
+        var fallback = new StubBatchTranslator(texts => Task.FromResult(texts.Select(t => "FB:" + t).ToArray()));
+        var translator = new FallbackBatchTranslator(primary, fallback);
+
+        var result = await translator.TranslateAsync(["Hello"], "fr");
+
+        Assert.Equal(1, primary.Calls);
+        Assert.Equal(1, fallback.Calls);
+        Assert.Equal("fr", primary.LastTarget);
+        Assert.Equal("fr", fallback.LastTarget);
+        Assert.Equal(["Hello"], fallback.LastTexts!);
+        Assert.Equal(["FB:Hello"], result);
     }
 }

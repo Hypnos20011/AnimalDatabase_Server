@@ -22,7 +22,7 @@ public class TranslateController : ControllerBase
     [HttpPost]
     [EnableRateLimiting(RateLimitPolicies.Translate)]
     [RequireAdminKey]
-    public async Task<ActionResult<AnimalTexts>> Translate([FromBody] AnimalTexts english)
+    public async Task<ActionResult<AnimalTexts>> Translate([FromBody] AnimalTexts english, [FromQuery] string? lang = null)
     {
         var length = (english.CommonName?.Length ?? 0) + (english.Habitat?.Length ?? 0) +
                      (english.RangeRegion?.Length ?? 0) + (english.Profile?.Length ?? 0);
@@ -31,9 +31,14 @@ public class TranslateController : ControllerBase
             return BadRequest("Too many characters!");
         }
 
+        if (!TryGetTargetLanguage(lang, out var target))
+        {
+            return BadRequest("Unsupported language");
+        }
+
         try
         {
-            var result = await _translator.TranslateAsync(english);
+            var result = await _translator.TranslateAsync(english, target);
             return Ok(result);
         }
         catch (HttpRequestException e) when (e.StatusCode == (HttpStatusCode)456)
@@ -48,5 +53,24 @@ public class TranslateController : ControllerBase
         {
             return StatusCode(StatusCodes.Status504GatewayTimeout, "The translation service took too long to answer");
         }
+    }
+
+    private static bool TryGetTargetLanguage(string? lang, out string target)
+    {
+        if (string.IsNullOrWhiteSpace(lang))
+        {
+            target = "de";
+            return true;
+        }
+
+        if (lang.Equals("de", StringComparison.OrdinalIgnoreCase) ||
+            lang.Equals("fr", StringComparison.OrdinalIgnoreCase))
+        {
+            target = lang;
+            return true;
+        }
+
+        target = "";
+        return false;
     }
 }

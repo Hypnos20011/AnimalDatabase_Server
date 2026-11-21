@@ -11,15 +11,15 @@ public class FallbackBatchTranslator : IBatchTranslator
         _fallback = fallback;
     }
 
-    public async Task<string[]> TranslateAsync(string[] texts)
+    public async Task<string[]> TranslateAsync(string[] texts, string targetLanguage = "de")
     {
         try
         {
-            return await _primary.TranslateAsync(texts);
+            return await _primary.TranslateAsync(texts, targetLanguage);
         }
         catch (Exception ex) when (_fallback is not null && IsRecoverable(ex))
         {
-            return await _fallback.TranslateAsync(texts);
+            return await _fallback.TranslateAsync(texts, targetLanguage);
         }
     }
 

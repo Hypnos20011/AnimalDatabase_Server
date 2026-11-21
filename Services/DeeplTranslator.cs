@@ -11,9 +11,10 @@ public class DeeplTranslator : IBatchTranslator
         _http = http;
     }
 
-    public async Task<string[]> TranslateAsync(string[] texts)
+    public async Task<string[]> TranslateAsync(string[] texts, string targetLanguage = "de")
     {
-        var request = new DeeplRequest(texts, "EN", "DE");
+        var target = string.Equals(targetLanguage, "fr", StringComparison.OrdinalIgnoreCase) ? "FR" : "DE";
+        var request = new DeeplRequest(texts, "EN", target);
         using var response = await _http.PostAsJsonAsync("v2/translate", request);
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<DeeplResponse>();

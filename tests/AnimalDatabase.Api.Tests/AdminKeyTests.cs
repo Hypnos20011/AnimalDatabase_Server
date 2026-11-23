@@ -1,5 +1,7 @@
 using System.Reflection;
 using AnimalDatabase.Api.Controllers;
+using AnimalDatabase.Api.Data;
+using AnimalDatabase.Api.Models;
 using AnimalDatabase.Api.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -90,7 +92,7 @@ public class AdminKeyTests
     [Fact]
     public void Admin_check_returns_204()
     {
-        Assert.IsType<NoContentResult>(new AdminController().Check());
+        Assert.IsType<NoContentResult>(new AdminController(new UnusedTranslationStore()).Check());
     }
 
     private static IEnumerable<(Type Controller, MethodInfo Action, string Method)> Endpoints()
@@ -123,7 +125,7 @@ public class AdminKeyTests
             .Where(endpoint => endpoint.Controller == typeof(AnimalsController) && endpoint.Method != "GET")
             .ToList();
 
-        Assert.Equal(new[] { "DELETE", "POST", "PUT", "PUT" }, writes.Select(endpoint => endpoint.Method).OrderBy(method => method));
+        Assert.Equal(new[] { "DELETE", "POST", "POST", "PUT", "PUT" }, writes.Select(endpoint => endpoint.Method).OrderBy(method => method));
         Assert.All(writes, endpoint => Assert.True(IsProtected(endpoint.Controller, endpoint.Action), endpoint.Action.Name));
     }
 
@@ -146,5 +148,20 @@ public class AdminKeyTests
         Assert.Contains(open, endpoint => endpoint.Controller == typeof(SearchesController) && endpoint.Method == "POST");
         Assert.Contains(open, endpoint => endpoint.Controller == typeof(AnimalsController) && endpoint.Method == "GET");
         Assert.All(open, endpoint => Assert.False(IsProtected(endpoint.Controller, endpoint.Action), endpoint.Action.Name));
+    }
+
+    private sealed class UnusedTranslationStore : IAnimalTranslationStore
+    {
+        public Task<AnimalTexts?> GetTranslationAsync(int id, string language) =>
+            throw new NotSupportedException();
+
+        public Task<bool> SaveTranslationAsync(int id, string language, AnimalTexts texts) =>
+            throw new NotSupportedException();
+
+        public Task<EnglishAnimal?> GetEnglishAsync(int id) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<EnglishAnimalRecord>> ListEnglishAsync() =>
+            throw new NotSupportedException();
     }
 }

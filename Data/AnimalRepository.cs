@@ -6,7 +6,7 @@ using MySqlConnector;
 
 namespace AnimalDatabase.Api.Data;
 
-public class AnimalRepository
+public class AnimalRepository : IAnimalTranslationStore
 {
     private const string SelectAnimals =
         "SELECT a.id," +
@@ -186,6 +186,46 @@ public class AnimalRepository
             new { Id = id, Language = language });
     }
 
+    public async Task<EnglishAnimal?> GetEnglishAsync(int id)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<EnglishAnimal>(
+            """
+            SELECT id, common_name, habitat, range_region, profile
+            FROM animals
+            WHERE id = @Id
+            """,
+            new { Id = id });
+    }
+
+    public async Task<IReadOnlyList<EnglishAnimalRecord>> ListEnglishAsync()
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        var rows = await connection.QueryAsync<TranslationListRow>(
+            """
+            SELECT a.id,
+                   a.common_name,
+                   a.habitat,
+                   a.range_region,
+                   a.profile,
+                   german.animal_id AS de_animal_id,
+                   german.common_name AS de_common_name,
+                   german.habitat AS de_habitat,
+                   german.range_region AS de_range_region,
+                   german.profile AS de_profile,
+                   french.animal_id AS fr_animal_id,
+                   french.common_name AS fr_common_name,
+                   french.habitat AS fr_habitat,
+                   french.range_region AS fr_range_region,
+                   french.profile AS fr_profile
+            FROM animals a
+            LEFT JOIN animal_translations german ON german.animal_id = a.id AND german.language = 'de'
+            LEFT JOIN animal_translations french ON french.animal_id = a.id AND french.language = 'fr'
+            ORDER BY a.id
+            """);
+        return rows.Select(ToRecord).ToList();
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         await using var connection = new MySqlConnection(_connectionString);
@@ -193,6 +233,39 @@ public class AnimalRepository
             "DELETE FROM animals WHERE id = @Id",
             new { Id = id });
         return affected > 0;
+    }
+
+    private static EnglishAnimalRecord ToRecord(TranslationListRow row)
+    {
+        return new EnglishAnimalRecord
+        {
+            English = new EnglishAnimal
+            {
+                Id = row.Id,
+                CommonName = row.CommonName,
+                Habitat = row.Habitat,
+                RangeRegion = row.RangeRegion,
+                Profile = row.Profile
+            },
+            German = row.DeAnimalId is null
+                ? null
+                : new AnimalTexts
+                {
+                    CommonName = row.DeCommonName,
+                    Habitat = row.DeHabitat,
+                    RangeRegion = row.DeRangeRegion,
+                    Profile = row.DeProfile
+                },
+            French = row.FrAnimalId is null
+                ? null
+                : new AnimalTexts
+                {
+                    CommonName = row.FrCommonName,
+                    Habitat = row.FrHabitat,
+                    RangeRegion = row.FrRangeRegion,
+                    Profile = row.FrProfile
+                }
+        };
     }
 
     private static DynamicParameters ToParameters(CreateAnimalRequest request)
@@ -242,5 +315,24 @@ public class AnimalRepository
                 },
                 transaction);
         }
+    }
+
+    private sealed class TranslationListRow
+    {
+        public int Id { get; set; }
+        public string? CommonName { get; set; }
+        public string? Habitat { get; set; }
+        public string? RangeRegion { get; set; }
+        public string? Profile { get; set; }
+        public int? DeAnimalId { get; set; }
+        public string? DeCommonName { get; set; }
+        public string? DeHabitat { get; set; }
+        public string? DeRangeRegion { get; set; }
+        public string? DeProfile { get; set; }
+        public int? FrAnimalId { get; set; }
+        public string? FrCommonName { get; set; }
+        public string? FrHabitat { get; set; }
+        public string? FrRangeRegion { get; set; }
+        public string? FrProfile { get; set; }
     }
 }

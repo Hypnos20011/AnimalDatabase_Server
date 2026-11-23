@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<AnimalRepository>();
+builder.Services.AddSingleton<IAnimalTranslationStore>(sp => sp.GetRequiredService<AnimalRepository>());
 builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
 builder.Services.AddSingleton<IStatsRepository, StatsRepository>();
 builder.Services.AddSingleton(new AnAgeSource(Path.Combine(AppContext.BaseDirectory, "Data", "Reference",
@@ -46,6 +47,7 @@ builder.Services.AddTransient<IBatchTranslator>(sp =>
     return new FallbackBatchTranslator(primary, fallback);
 });
 builder.Services.AddTransient<AnimalTextTranslator>();
+builder.Services.AddTransient<MissingTranslationFiller>();
 builder.Services.AddHttpClient<LibreTranslateTranslator>(client =>
 {
     var baseUrl = builder.Configuration["LibreTranslate:BaseUrl"];

@@ -2,6 +2,7 @@ using AnimalDatabase.Api.Data;
 using AnimalDatabase.Api.Localization;
 using AnimalDatabase.Api.Models;
 using AnimalDatabase.Api.Security;
+using AnimalDatabase.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AnimalDatabase.Api.Controllers;
@@ -11,10 +12,12 @@ namespace AnimalDatabase.Api.Controllers;
 public class AnimalsController : ControllerBase
 {
     private readonly AnimalRepository _repository;
+    private readonly MissingTranslationFiller _filler;
 
-    public AnimalsController(AnimalRepository repository)
+    public AnimalsController(AnimalRepository repository, MissingTranslationFiller filler)
     {
         _repository = repository;
+        _filler = filler;
     }
 
     [HttpGet]
@@ -66,6 +69,7 @@ public class AnimalsController : ControllerBase
     public async Task<ActionResult<Animal>> Create(CreateAnimalRequest request)
     {
         var animal = await _repository.CreateAsync(request);
+        await _filler.FillAsync(animal.Id);
         return CreatedAtAction(nameof(GetById), new { id = animal.Id }, animal);
     }
 
@@ -79,6 +83,7 @@ public class AnimalsController : ControllerBase
             return NotFound();
         }
 
+        await _filler.FillAsync(id);
         return Ok(animal);
     }
 
@@ -98,7 +103,27 @@ public class AnimalsController : ControllerBase
             return NotFound();
         }
 
+        await _filler.FillAsync(id);
         return NoContent();
+    }
+
+    [HttpPost("{id:int}/translate-missing")]
+    [RequireAdminKey]
+    public async Task<ActionResult<MissingTranslationReport>> TranslateMissing(int id)
+    {
+        if (await _filler.ReportAsync(id) is null)
+        {
+            return NotFound();
+        }
+
+        await _filler.FillAsync(id);
+        var remaining = await _filler.ReportAsync(id);
+        if (remaining is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(remaining);
     }
 
     [HttpDelete("{id:int}")]

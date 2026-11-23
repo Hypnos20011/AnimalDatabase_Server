@@ -70,6 +70,32 @@ public class DeeplTranslatorTests
         Assert.False(root.TryGetProperty("targetLang", out _));
     }
 
+    [Theory]
+    [InlineData("fr")]
+    [InlineData("FR")]
+    [InlineData("Fr")]
+    public async Task Sends_target_lang_FR_for_french(string targetLanguage)
+    {
+        var (translator, handler) = Create(body: """{"translations":[{"text":"Bonjour"}]}""");
+
+        await translator.TranslateAsync(["Hello"], targetLanguage);
+
+        using var json = JsonDocument.Parse(handler.RequestBody!);
+        Assert.Equal("EN", json.RootElement.GetProperty("source_lang").GetString());
+        Assert.Equal("FR", json.RootElement.GetProperty("target_lang").GetString());
+    }
+
+    [Fact]
+    public async Task Sends_target_lang_DE_by_default()
+    {
+        var (translator, handler) = Create(body: """{"translations":[{"text":"Hallo"}]}""");
+
+        await translator.TranslateAsync(["Hello"]);
+
+        using var json = JsonDocument.Parse(handler.RequestBody!);
+        Assert.Equal("DE", json.RootElement.GetProperty("target_lang").GetString());
+    }
+
     [Fact]
     public async Task Returns_translations_in_the_same_order()
     {

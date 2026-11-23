@@ -13,6 +13,7 @@ public class TranslateControllerTests
     private sealed class StubDeeplHandler : HttpMessageHandler
     {
         public int Calls { get; private set; }
+        public string? TargetLang { get; private set; }
         public Exception? Failure { get; set; }
         public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
 
@@ -28,6 +29,7 @@ public class TranslateControllerTests
                 return new HttpResponseMessage(Status);
             }
             using var json = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(cancellationToken));
+            TargetLang = json.RootElement.GetProperty("target_lang").GetString();
             var translations = json.RootElement.GetProperty("text").EnumerateArray()
                 .Select(t => new { text = "DE:" + t.GetString() }).ToArray();
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(new { translations }) };
@@ -64,6 +66,48 @@ public class TranslateControllerTests
         Assert.Equal("DE:Central Africa", result.RangeRegion);
         Assert.Equal("DE:A forest giraffe. Fun fact: DE:Its tongue is very long.", result.Profile);
         Assert.Equal(1, handler.Calls);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Omitted_or_blank_lang_uses_DE(string? lang)
+    {
+        var (controller, handler) = Create();
+
+        var response = await controller.Translate(Okapi(), lang);
+
+        Assert.IsType<OkObjectResult>(response.Result);
+        Assert.Equal("DE", handler.TargetLang);
+        Assert.Equal(1, handler.Calls);
+    }
+
+    [Fact]
+    public async Task Lang_FR_sends_FR()
+    {
+        var (controller, handler) = Create();
+
+        var response = await controller.Translate(Okapi(), "FR");
+
+        Assert.IsType<OkObjectResult>(response.Result);
+        Assert.Equal("FR", handler.TargetLang);
+        Assert.Equal(1, handler.Calls);
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("es")]
+    [InlineData("deutsch")]
+    public async Task Unsupported_lang_returns_bad_request_without_calling_the_translator(string lang)
+    {
+        var (controller, handler) = Create();
+
+        var response = await controller.Translate(Okapi(), lang);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(response.Result);
+        Assert.Equal("Unsupported language", bad.Value);
+        Assert.Equal(0, handler.Calls);
     }
 
     [Fact]
@@ -146,9 +190,10 @@ public class TranslateControllerTests
         Assert.Equal(504, result.StatusCode);
     }
 
-    private static HttpRequestMessage Post(string? adminKey, AnimalTexts texts)
+    private static HttpRequestMessage Post(string? adminKey, AnimalTexts texts, string? lang = null)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, "/api/translate") { Content = JsonContent.Create(texts) };
+        var path = lang is null ? "/api/translate" : $"/api/translate?lang={Uri.EscapeDataString(lang)}";
+        var request = new HttpRequestMessage(HttpMethod.Post, path) { Content = JsonContent.Create(texts) };
         if (adminKey is not null)
         {
             request.Headers.Add("X-Admin-Key", adminKey);
@@ -212,5 +257,17 @@ public class TranslateControllerTests
         using var translate = await client.SendAsync(Post(ApiFactory.TestKey, TooLong()));
 
         Assert.Equal(HttpStatusCode.BadRequest, translate.StatusCode);
+    }
+
+    [Fact]
+    public async Task Request_with_unsupported_lang_returns_bad_request()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        using var response = await client.SendAsync(Post(ApiFactory.TestKey, Okapi(), "es"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("Unsupported language", await response.Content.ReadAsStringAsync());
     }
 }

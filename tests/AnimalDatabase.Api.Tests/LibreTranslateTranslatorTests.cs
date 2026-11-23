@@ -79,6 +79,46 @@ public class LibreTranslateTranslatorTests
     }
 
     [Fact]
+    public async Task Sends_target_fr_for_FR()
+    {
+        var (translator, handler) = Create(body: """{"translatedText":["Bonjour"]}""");
+
+        await translator.TranslateAsync(["Hello"], "FR");
+
+        using var json = JsonDocument.Parse(handler.RequestBody!);
+        var root = json.RootElement;
+        Assert.Equal("en", root.GetProperty("source").GetString());
+        Assert.Equal("fr", root.GetProperty("target").GetString());
+    }
+
+    [Fact]
+    public async Task Sends_target_de_by_default()
+    {
+        var (translator, handler) = Create(body: """{"translatedText":["Hallo"]}""");
+
+        await translator.TranslateAsync(["Hello"]);
+
+        using var json = JsonDocument.Parse(handler.RequestBody!);
+        Assert.Equal("de", json.RootElement.GetProperty("target").GetString());
+    }
+
+    [Fact]
+    public async Task Error_object_without_translated_text_throws_http_request_exception()
+    {
+        var (translator, _) = Create(body: """{"error":"fr is not supported"}""");
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => translator.TranslateAsync(["Hello"], "fr"));
+    }
+
+    [Fact]
+    public async Task Invalid_json_throws_http_request_exception()
+    {
+        var (translator, _) = Create(body: "this is not json");
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => translator.TranslateAsync(["Hello"]));
+    }
+
+    [Fact]
     public async Task Returns_translations_in_the_same_order()
     {
         var (translator, _) = Create(body: """{"translatedText":["Axolotl","Seen in Mexiko","Mexiko-Stadt"]}""");

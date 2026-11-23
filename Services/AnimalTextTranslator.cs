@@ -13,14 +13,14 @@ public class AnimalTextTranslator
         _batchTranslator = batchTranslator;
     }
 
-    public async Task<AnimalTexts> TranslateAsync(AnimalTexts english)
+    public async Task<AnimalTexts> TranslateAsync(AnimalTexts english, string targetLanguage = "de")
     {
         var marker = english.Profile is null ? Match.Empty : FunFactMarker.Match(english.Profile);
         var description = marker.Success ? english.Profile![..marker.Index] : english.Profile;
         var funFact = marker.Success ? english.Profile![(marker.Index + marker.Length)..] : null;
         string?[] pieces = [english.CommonName, english.Habitat, english.RangeRegion, description, funFact];
         var toSend = pieces.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p!).ToArray();
-        var translated = toSend.Length == 0 ? [] : await _batchTranslator.TranslateAsync(toSend);
+        var translated = toSend.Length == 0 ? [] : await _batchTranslator.TranslateAsync(toSend, targetLanguage);
         var next = 0;
         var german = pieces.Select(p => string.IsNullOrWhiteSpace(p) ? null : translated[next++]).ToArray();
 

@@ -11,6 +11,7 @@ public class AnimalTextTranslatorTests
     private sealed class EchoDeeplHandler : HttpMessageHandler
     {
         public List<string[]> Requests { get; } = new();
+        public List<string?> Targets { get; } = new();
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -18,6 +19,7 @@ public class AnimalTextTranslatorTests
             using var json = JsonDocument.Parse(body);
             var texts = json.RootElement.GetProperty("text").EnumerateArray().Select(t => t.GetString()!).ToArray();
             Requests.Add(texts);
+            Targets.Add(json.RootElement.GetProperty("target_lang").GetString());
             var response = JsonSerializer.Serialize(new { translations = texts.Select(t => new { text = "DE:" + t }) });
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -80,6 +82,21 @@ public class AnimalTextTranslatorTests
         });
 
         Assert.Equal("DE:Stays young. Fun fact: DE:Regrows limbs.", german.Profile);
+    }
+
+    [Fact]
+    public async Task French_target_keeps_the_exact_fun_fact_marker()
+    {
+        var (translator, handler) = Create();
+
+        var french = await translator.TranslateAsync(new AnimalTexts
+        {
+            Profile = "Stays young. Fun fact: Regrows limbs."
+        }, "fr");
+
+        Assert.Equal(["Stays young.", "Regrows limbs."], handler.Requests[0]);
+        Assert.Equal("FR", handler.Targets[0]);
+        Assert.Equal("DE:Stays young. Fun fact: DE:Regrows limbs.", french.Profile);
     }
 
     [Fact]

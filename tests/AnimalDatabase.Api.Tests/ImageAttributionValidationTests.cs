@@ -9,12 +9,15 @@ namespace AnimalDatabase.Api.Tests;
 
 public class ImageAttributionValidationTests
 {
-    private static List<ValidationResult> ValidateImage(string? sourcePageUrl, string? attribution = null)
+    private static List<ValidationResult> ValidateImage(
+        string? sourcePageUrl,
+        string? attribution = null,
+        string imageUrl = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Okapia_johnstoni_17zz.jpg")
     {
         var request = new CreateAnimalImageRequest
         {
             Kind = "unspecified",
-            Url = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Okapia_johnstoni_17zz.jpg",
+            Url = imageUrl,
             Attribution = attribution,
             SourcePageUrl = sourcePageUrl
         };
@@ -44,6 +47,23 @@ public class ImageAttributionValidationTests
     }
 
     [Fact]
+    public void Https_image_url_is_accepted()
+    {
+        Assert.Empty(ValidateImage(null, imageUrl: "https://upload.wikimedia.org/image.jpg"));
+    }
+
+    [Theory]
+    [InlineData("http://upload.wikimedia.org/image.jpg")]
+    [InlineData("ftp://upload.wikimedia.org/image.jpg")]
+    [InlineData("upload.wikimedia.org/image.jpg")]
+    public void Non_https_image_url_is_rejected(string imageUrl)
+    {
+        var results = ValidateImage(null, imageUrl: imageUrl);
+        Assert.NotEmpty(results);
+        Assert.All(results, r => Assert.Contains(nameof(CreateAnimalImageRequest.Url), r.MemberNames));
+    }
+
+    [Fact]
     public void Too_long_attribution_is_rejected()
     {
         Assert.NotEmpty(ValidateImage(null, new string('a', 501)));
@@ -68,7 +88,11 @@ public class ImageAttributionValidationTests
         Assert.Equal(image.SourcePageUrl, back.SourcePageUrl);
     }
 
-    private static HttpRequestMessage Send(HttpMethod method, string url)
+    private static HttpRequestMessage Send(
+        HttpMethod method,
+        string url,
+        string imageUrl = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Okapia_johnstoni_17zz.jpg",
+        string sourcePageUrl = "http://commons.wikimedia.org/wiki/File:Okapi.jpg")
     {
         var body = new
         {
@@ -78,8 +102,8 @@ public class ImageAttributionValidationTests
                 new
                 {
                     kind = "unspecified",
-                    url = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Okapia_johnstoni_17zz.jpg",
-                    sourcePageUrl = "http://commons.wikimedia.org/wiki/File:Okapi.jpg"
+                    url = imageUrl,
+                    sourcePageUrl
                 }
             }
         };
@@ -101,5 +125,24 @@ public class ImageAttributionValidationTests
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Contains("SourcePageUrl", await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    public async Task Api_rejects_non_https_image_url_on_create_and_update(string method)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        var url = method == "POST" ? "/api/animals" : "/api/animals/1";
+
+        using var response = await client.SendAsync(Send(
+            new HttpMethod(method),
+            url,
+            "http://upload.wikimedia.org/image.jpg",
+            "https://commons.wikimedia.org/wiki/File:Okapi.jpg"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("Url", await response.Content.ReadAsStringAsync());
     }
 }

@@ -18,6 +18,14 @@ public class CreateAnimalImageRequest : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        if (!string.IsNullOrEmpty(Url) &&
+            !(Uri.TryCreate(Url, UriKind.Absolute, out var image) && image.Scheme == Uri.UriSchemeHttps))
+        {
+            yield return new ValidationResult(
+                "Image link: only https:// links are allowed.",
+                [nameof(Url)]);
+        }
+
         if (!string.IsNullOrEmpty(SourcePageUrl) &&
             !(Uri.TryCreate(SourcePageUrl, UriKind.Absolute, out var source) && source.Scheme == Uri.UriSchemeHttps))
         {

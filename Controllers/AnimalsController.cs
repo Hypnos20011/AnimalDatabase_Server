@@ -11,10 +11,10 @@ namespace AnimalDatabase.Api.Controllers;
 [Route("api/animals")]
 public class AnimalsController : ControllerBase
 {
-    private readonly AnimalRepository _repository;
+    private readonly IAnimalRepository _repository;
     private readonly MissingTranslationFiller _filler;
 
-    public AnimalsController(AnimalRepository repository, MissingTranslationFiller filler)
+    public AnimalsController(IAnimalRepository repository, MissingTranslationFiller filler)
     {
         _repository = repository;
         _filler = filler;
@@ -23,14 +23,14 @@ public class AnimalsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Animal>>> GetAll([FromQuery] string? lang)
     {
-        var animals = await _repository.GetAllAsync(SupportedLanguages.Normalize(lang));
+        var animals = await _repository.GetAllAsync(SupportedLanguages.Normalize(lang), HttpContext.GetViewerRole());
         return Ok(animals);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Animal>> GetById(int id, [FromQuery] string? lang)
     {
-        var animal = await _repository.GetByIdAsync(id, SupportedLanguages.Normalize(lang));
+        var animal = await _repository.GetByIdAsync(id, SupportedLanguages.Normalize(lang), HttpContext.GetViewerRole());
         if (animal is null)
         {
             return NotFound();
@@ -48,6 +48,12 @@ public class AnimalsController : ControllerBase
             return BadRequest("Invalid language");
         }
 
+        var viewer = HttpContext.GetViewerRole();
+        if (!await _repository.IsVisibleAsync(id, viewer))
+        {
+            return NotFound();
+        }
+
         var texts = await _repository.GetTranslationAsync(id, SupportedLanguages.Normalize(language));
         if (texts is null)
         {
@@ -60,7 +66,13 @@ public class AnimalsController : ControllerBase
     [HttpGet("{id:int}/images")]
     public async Task<ActionResult<IReadOnlyList<AnimalImage>>> GetImages(int id)
     {
-        var images = await _repository.GetImagesByAnimalIdAsync(id);
+        var viewer = HttpContext.GetViewerRole();
+        if (!await _repository.IsVisibleAsync(id, viewer))
+        {
+            return NotFound();
+        }
+
+        var images = await _repository.GetImagesByAnimalIdAsync(id, viewer);
         return Ok(images);
     }
 
@@ -68,8 +80,13 @@ public class AnimalsController : ControllerBase
     [RequireRole(Role.Tester)]
     public async Task<ActionResult<Animal>> Create(CreateAnimalRequest request)
     {
-        var animal = await _repository.CreateAsync(request);
-        await _filler.FillAsync(animal.Id);
+        var role = (Role)HttpContext.Items[RequireRoleAttribute.RoleItemKey]!;
+        var animal = await _repository.CreateAsync(request, role);
+        if (animal.Status == AnimalStatus.Approved)
+        {
+            await _filler.FillAsync(animal.Id);
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = animal.Id }, animal);
     }
 
@@ -77,14 +94,24 @@ public class AnimalsController : ControllerBase
     [RequireRole(Role.Tester)]
     public async Task<ActionResult<Animal>> Update(int id, CreateAnimalRequest request)
     {
-        var animal = await _repository.UpdateAsync(id, request);
-        if (animal is null)
+        var role = (Role)HttpContext.Items[RequireRoleAttribute.RoleItemKey]!;
+        var result = await _repository.UpdateAsync(id, request, role);
+        if (result.Status == AnimalWriteStatus.NotFound)
         {
             return NotFound();
         }
 
-        await _filler.FillAsync(id);
-        return Ok(animal);
+        if (result.Status == AnimalWriteStatus.Forbidden)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "Editing an approved animal needs admin approval.");
+        }
+
+        if (result.Animal?.Status == AnimalStatus.Approved)
+        {
+            await _filler.FillAsync(id);
+        }
+
+        return Ok(result.Animal);
     }
 
     [HttpPut("{id:int}/translations/{language}")]
@@ -127,15 +154,18 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [RequireRole(Role.Admin)]
+    [RequireRole(Role.Tester)]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _repository.DeleteAsync(id);
-        if (!deleted)
+        var role = (Role)HttpContext.Items[RequireRoleAttribute.RoleItemKey]!;
+        var result = await _repository.DeleteAsync(id, role == Role.Tester);
+        if (result.Status == AnimalDeleteStatus.NotFound)
         {
             return NotFound();
         }
 
-        return NoContent();
+        return result.Status == AnimalDeleteStatus.Forbidden
+            ? StatusCode(StatusCodes.Status403Forbidden)
+            : NoContent();
     }
 }

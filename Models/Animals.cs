@@ -29,6 +29,10 @@ public class Animal
     public string? Profile { get; set; }
     public string? SourceUrl { get; set; }
     public string? ThumbnailUrl { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string SubmittedBy { get; set; } = string.Empty;
+    public DateTime? ReviewedAt { get; set; }
+    public string? ReviewNote { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

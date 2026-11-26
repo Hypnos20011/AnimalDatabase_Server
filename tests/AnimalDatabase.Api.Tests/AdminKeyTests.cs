@@ -189,8 +189,10 @@ public class AdminKeyTests
     [InlineData("GET", "/api/admin/missing-translations")]
     [InlineData("PUT", "/api/animals/1/translations/de")]
     [InlineData("POST", "/api/animals/1/translate-missing")]
-    [InlineData("DELETE", "/api/animals/1")]
     [InlineData("POST", "/api/translate?lang=de")]
+    [InlineData("GET", "/api/admin/review/animals")]
+    [InlineData("POST", "/api/admin/review/animals/1/approve")]
+    [InlineData("POST", "/api/admin/review/animals/1/reject")]
     public async Task Tester_key_is_forbidden_for_each_admin_only_endpoint(string method, string path)
     {
         using var factory = new ApiFactory();
@@ -261,6 +263,7 @@ public class AdminKeyTests
         var open = Endpoints()
             .Where(endpoint => endpoint.Controller != typeof(AdminController)
                 && endpoint.Controller != typeof(WikipediaController)
+                && endpoint.Controller != typeof(ReviewController)
                 && (endpoint.Method == "GET" || endpoint.Controller == typeof(SearchesController)))
             .ToList();
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<AnimalRepository>();
+builder.Services.AddSingleton<IAnimalRepository>(sp => sp.GetRequiredService<AnimalRepository>());
 builder.Services.AddSingleton<IAnimalTranslationStore>(sp => sp.GetRequiredService<AnimalRepository>());
 builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
 builder.Services.AddSingleton<IStatsRepository, StatsRepository>();

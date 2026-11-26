@@ -14,6 +14,7 @@ internal sealed class ApiFactory : WebApplicationFactory<Program>
 {
     public const string PeerHeader = "X-Test-Peer";
     public const string TestKey = "test-admin-key-for-rate-limits";
+    public const string TesterKey = "test-tester-key-for-rate-limits";
 
     private readonly string _environment;
     private readonly Dictionary<string, string?> _settings;
@@ -24,7 +25,8 @@ internal sealed class ApiFactory : WebApplicationFactory<Program>
         _settings = new Dictionary<string, string?>
         {
             ["ConnectionStrings:AnimalDatabase"] = "Server=127.0.0.1;Port=1;Database=none;User=none",
-            ["Admin:ApiKey"] = TestKey
+            ["Admin:ApiKey"] = TestKey,
+            ["Admin:TesterKey"] = TesterKey
         };
         foreach (var pair in settings ?? new Dictionary<string, string?>())
         {

@@ -65,7 +65,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPost]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<ActionResult<Animal>> Create(CreateAnimalRequest request)
     {
         var animal = await _repository.CreateAsync(request);
@@ -74,7 +74,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<ActionResult<Animal>> Update(int id, CreateAnimalRequest request)
     {
         var animal = await _repository.UpdateAsync(id, request);
@@ -88,7 +88,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPut("{id:int}/translations/{language}")]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<IActionResult> SaveTranslation(int id, string language, AnimalTexts texts)
     {
         if (!SupportedLanguages.All.Contains(language) ||
@@ -108,7 +108,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPost("{id:int}/translate-missing")]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<ActionResult<MissingTranslationReport>> TranslateMissing(int id)
     {
         if (await _filler.ReportAsync(id) is null)
@@ -127,7 +127,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _repository.DeleteAsync(id);

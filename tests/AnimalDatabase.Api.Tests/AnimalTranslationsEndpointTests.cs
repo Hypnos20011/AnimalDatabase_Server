@@ -164,7 +164,7 @@ public class AnimalTranslationsEndpointTests
     {
         var action = typeof(AnimalsController).GetMethod(nameof(AnimalsController.GetTranslation));
         Assert.NotNull(action);
-        Assert.Null(action!.GetCustomAttributes(typeof(RequireAdminKeyAttribute), inherit: true).FirstOrDefault());
-        Assert.Null(typeof(AnimalsController).GetCustomAttributes(typeof(RequireAdminKeyAttribute), inherit: true).FirstOrDefault());
+        Assert.Null(action!.GetCustomAttributes(typeof(RequireRoleAttribute), inherit: true).FirstOrDefault());
+        Assert.Null(typeof(AnimalsController).GetCustomAttributes(typeof(RequireRoleAttribute), inherit: true).FirstOrDefault());
     }
 }

@@ -62,6 +62,7 @@ server and on x86 machines. To build an ARM64 image on an x86 PC:
 |---------------------------------------|---------------------------------------------|-------------------------------------------------------------|
 | `ConnectionStrings__AnimalDatabase`   | (none)                                      | Built by compose from `.env`                                |
 | `Admin__ApiKey`                       | (none)                                      | `ADMIN_API_KEY` from `.env`; without it editing is disabled |
+| `Admin__TesterKey`                    | (none)                                      | Optional `TESTER_API_KEY` from `.env`; blank disables tester access |
 | `DeepL__ApiKey`                       | (none)                                      | `DEEPL_API_KEY` from `.env`; Translate button needs it (primary) |
 | `LibreTranslate__BaseUrl`             | `http://libretranslate:5000/`               | DeepL fallback; compose default points at the internal service. Set `LIBRETRANSLATE_BASE_URL=` empty to disable |
 | `LibreTranslate__ApiKey`              | (none)                                      | Unused unless you enable `LT_API_KEYS` on the LibreTranslate container (`LIBRETRANSLATE_API_KEY`) |

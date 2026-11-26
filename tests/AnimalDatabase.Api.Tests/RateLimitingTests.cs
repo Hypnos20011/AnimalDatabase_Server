@@ -122,6 +122,18 @@ public class RateLimitingTests
     }
 
     [Fact]
+    public async Task A_tester_key_does_not_skip_the_search_log_limit()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        var statuses = await SendMany(client, 31, _ => Request(HttpMethod.Post, "/api/searches", adminKey: ApiFactory.TesterKey));
+
+        Assert.All(statuses.Take(30), status => Assert.Equal(HttpStatusCode.NoContent, status));
+        Assert.Equal(HttpStatusCode.TooManyRequests, statuses[30]);
+    }
+
+    [Fact]
     public async Task A_wrong_admin_key_does_not_skip_the_search_log_limit()
     {
         using var factory = new ApiFactory();

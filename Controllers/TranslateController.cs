@@ -21,7 +21,7 @@ public class TranslateController : ControllerBase
 
     [HttpPost]
     [EnableRateLimiting(RateLimitPolicies.Translate)]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<ActionResult<AnimalTexts>> Translate([FromBody] AnimalTexts english, [FromQuery] string? lang = null)
     {
         var length = (english.CommonName?.Length ?? 0) + (english.Habitat?.Length ?? 0) +

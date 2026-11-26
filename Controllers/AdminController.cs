@@ -21,14 +21,15 @@ public class AdminController : ControllerBase
 
     [HttpGet("check")]
     [EnableRateLimiting(RateLimitPolicies.AdminCheck)]
-    [RequireAdminKey]
+    [RequireRole(Role.Tester)]
     public IActionResult Check()
     {
-        return NoContent();
+        var role = (Role)HttpContext.Items[RequireRoleAttribute.RoleItemKey]!;
+        return Ok(new { role = role.ToString().ToLowerInvariant() });
     }
 
     [HttpGet("missing-translations")]
-    [RequireAdminKey]
+    [RequireRole(Role.Admin)]
     public async Task<ActionResult<IReadOnlyList<MissingTranslationReport>>> MissingTranslations()
     {
         var animals = await _store.ListEnglishAsync();

@@ -8,6 +8,19 @@ namespace AnimalDatabase.Api.Tests;
 public class MissingTranslationFillerTests
 {
     [Fact]
+    public async Task Does_not_translate_when_the_english_record_is_unavailable()
+    {
+        var store = new MemoryStore();
+        var translator = new PrefixTranslator();
+        var filler = Create(store, translator);
+
+        await filler.FillAsync(5);
+
+        Assert.Equal(0, translator.Calls);
+        Assert.Empty(store.Saves);
+    }
+
+    [Fact]
     public async Task Keeps_an_existing_german_name_while_filling_the_profile()
     {
         var store = new MemoryStore

@@ -300,6 +300,9 @@ once, in this order. Check first with `SHOW COLUMNS FROM animals; SHOW TABLES;` 
 | `Database/animal_translations_de.sql` | Loads the German texts                     |
 | `Database/weight_range.sql`           | Raises the weight limit to 9,999,999.99 kg |
 | `Database/source_url.sql`             | Adds `animals.source_url`                  |
+| `Database/animal_status.sql`           | Adds `animals.status`, `submitted_by`, `reviewed_at`, `review_note` |
+
+Back up the live database first, then run `Database/animal_status.sql` before deploying this API version.
 
 Copy a script to the server and run it from the live `deploy` folder:
 

@@ -20,7 +20,7 @@ public class SearchRepository : ISearchRepository
         var affected = await connection.ExecuteAsync(
             """
             INSERT INTO searches (query_text, animal_id)
-            SELECT @QueryText, a.id FROM animals a WHERE a.id = @AnimalId;
+            SELECT @QueryText, a.id FROM animals a WHERE a.id = @AnimalId AND a.status = 'approved';
             """,
             new { QueryText = (request.QueryText ?? string.Empty).Trim(), request.AnimalId });
         return affected > 0;
@@ -37,7 +37,7 @@ public class SearchRepository : ISearchRepository
                 (SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) AS thumbnail_url,
                 COUNT(*) AS search_count
             FROM searches s
-            JOIN animals a ON a.id = s.animal_id
+            JOIN animals a ON a.id = s.animal_id AND a.status = 'approved'
             WHERE @Days IS NULL OR s.searched_at >= NOW() - INTERVAL @Days DAY
             GROUP BY a.id, a.common_name
             ORDER BY search_count DESC, a.common_name

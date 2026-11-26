@@ -1,12 +1,13 @@
 using AnimalDatabase.Api.Localization;
 using AnimalDatabase.Api.Models;
+using AnimalDatabase.Api.Security;
 using AnimalDatabase.Api.Services;
 using Dapper;
 using MySqlConnector;
 
 namespace AnimalDatabase.Api.Data;
 
-public class AnimalRepository : IAnimalTranslationStore
+public class AnimalRepository : IAnimalTranslationStore, IAnimalRepository
 {
     private const string SelectAnimals =
         "SELECT a.id," +
@@ -29,6 +30,7 @@ public class AnimalRepository : IAnimalTranslationStore
         "COALESCE(t.range_region, a.range_region) AS range_region, " +
         "COALESCE(t.profile, a.profile) AS profile, " +
         "a.source_url, " +
+        "a.status, a.submitted_by, a.reviewed_at, a.review_note, " +
         "(SELECT i.url FROM animal_images i WHERE i.animal_id = a.id ORDER BY i.sort_order, i.id LIMIT 1) " +
         "AS thumbnail_url FROM animals a" +
         " LEFT JOIN animal_translations t ON t.animal_id = a.id AND t.language = @Language";
@@ -41,33 +43,44 @@ public class AnimalRepository : IAnimalTranslationStore
                             ?? throw new InvalidOperationException("Connection string 'AnimalDatabase' not found.");
     }
 
-    public async Task<IReadOnlyList<Animal>> GetAllAsync(string language)
+    public async Task<IReadOnlyList<Animal>> GetAllAsync(string language, Role? viewer)
     {
         await using var connection = new MySqlConnection(_connectionString);
-        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} ORDER BY common_name",
-            new { Language = language });
+        var rows = await connection.QueryAsync<Animal>($"{SelectAnimals} WHERE a.status IN @Statuses ORDER BY common_name",
+            new { Language = language, Statuses = AnimalVisibility.StatusesFor(viewer) });
         return rows.ToList();
     }
 
-    public async Task<Animal?> GetByIdAsync(int id, string language)
+    public async Task<Animal?> GetByIdAsync(int id, string language, Role? viewer)
     {
         await using var connection = new MySqlConnection(_connectionString);
         return await connection.QuerySingleOrDefaultAsync<Animal>(
-            $"{SelectAnimals} WHERE a.id = @Id",
-            new { Id = id, Language = language });
+            $"{SelectAnimals} WHERE a.id = @Id AND a.status IN @Statuses",
+            new { Id = id, Language = language, Statuses = AnimalVisibility.StatusesFor(viewer) });
     }
 
-    public async Task<IReadOnlyList<AnimalImage>> GetImagesByAnimalIdAsync(int animalId)
+    public async Task<bool> IsVisibleAsync(int id, Role? viewer)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        var count = await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM animals WHERE id = @Id AND status IN @Statuses",
+            new { Id = id, Statuses = AnimalVisibility.StatusesFor(viewer) });
+        return count > 0;
+    }
+
+    public async Task<IReadOnlyList<AnimalImage>> GetImagesByAnimalIdAsync(int animalId, Role? viewer)
     {
         await using var connection = new MySqlConnection(_connectionString);
         var rows = await connection.QueryAsync<AnimalImage>(
-            "SELECT * FROM animal_images WHERE animal_id = @AnimalId ORDER BY sort_order, id",
-            new { AnimalId = animalId });
+            "SELECT i.* FROM animal_images i JOIN animals a ON a.id = i.animal_id WHERE i.animal_id = @AnimalId AND a.status IN @Statuses ORDER BY i.sort_order, i.id",
+            new { AnimalId = animalId, Statuses = AnimalVisibility.StatusesFor(viewer) });
         return rows.ToList();
     }
 
-    public async Task<Animal> CreateAsync(CreateAnimalRequest request)
+    public async Task<Animal> CreateAsync(CreateAnimalRequest request, Role submitter)
     {
+        var status = submitter == Role.Admin ? AnimalStatus.Approved : AnimalStatus.Pending;
+        var submittedBy = submitter == Role.Admin ? "admin" : "tester";
         await using var connection = new MySqlConnection(_connectionString);
         await connection.OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync();
@@ -78,36 +91,45 @@ public class AnimalRepository : IAnimalTranslationStore
                 common_name, scientific_name, family, taxonomic_class, is_domesticated,
                 size_length_cm_min, size_length_cm_max, size_height_cm_min, size_height_cm_max,
                 weight_kg_min, weight_kg_max, lifespan_years_min, lifespan_years_max,
-                iucn_status, habitat, habitat_type, range_region, profile, source_url)
+                iucn_status, habitat, habitat_type, range_region, profile, source_url,
+                status, submitted_by, reviewed_at)
             VALUES (
                 @CommonName, @ScientificName, @Family, @TaxonomicClass, @IsDomesticated,
                 @SizeLengthCmMin, @SizeLengthCmMax, @SizeHeightCmMin, @SizeHeightCmMax,
                 @WeightKgMin, @WeightKgMax, @LifespanYearsMin, @LifespanYearsMax,
-                @IucnStatus, @Habitat, @HabitatType, @RangeRegion, @Profile, @SourceUrl);
+                @IucnStatus, @Habitat, @HabitatType, @RangeRegion, @Profile, @SourceUrl,
+                @Status, @SubmittedBy, NULL);
             SELECT LAST_INSERT_ID();
             """,
-            ToParameters(request),
+            CreateParameters(request, status, submittedBy),
             transaction);
 
         await InsertImagesAsync(connection, transaction, id, request.Images);
 
         await transaction.CommitAsync();
-        return (await GetByIdAsync(id, SupportedLanguages.Default))!;
+        return (await GetByIdAsync(id, SupportedLanguages.Default, Role.Admin))!;
     }
 
-    public async Task<Animal?> UpdateAsync(int id, CreateAnimalRequest request)
+    public async Task<AnimalWriteResult> UpdateAsync(int id, CreateAnimalRequest request, Role editor)
     {
         await using var connection = new MySqlConnection(_connectionString);
         await connection.OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync();
 
-        var exists = await connection.ExecuteScalarAsync<int>(
-            "SELECT COUNT(*) FROM animals WHERE id = @Id",
+        var status = await connection.QuerySingleOrDefaultAsync<string>(
+            "SELECT status FROM animals WHERE id = @Id FOR UPDATE",
             new { Id = id },
             transaction);
-        if (exists == 0)
+        if (status is null)
         {
-            return null;
+            await transaction.RollbackAsync();
+            return new AnimalWriteResult(AnimalWriteStatus.NotFound, null);
+        }
+
+        if (editor == Role.Tester && status != AnimalStatus.Pending)
+        {
+            await transaction.RollbackAsync();
+            return new AnimalWriteResult(AnimalWriteStatus.Forbidden, null);
         }
 
         var parameters = ToParameters(request);
@@ -146,7 +168,18 @@ public class AnimalRepository : IAnimalTranslationStore
         await InsertImagesAsync(connection, transaction, id, request.Images);
 
         await transaction.CommitAsync();
-        return await GetByIdAsync(id, SupportedLanguages.Default);
+        return new AnimalWriteResult(
+            AnimalWriteStatus.Updated,
+            await GetByIdAsync(id, SupportedLanguages.Default, Role.Admin));
+    }
+
+    public async Task<IReadOnlyList<Animal>> GetPendingAsync(string language)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        var rows = await connection.QueryAsync<Animal>(
+            $"{SelectAnimals} WHERE a.status = @Status ORDER BY a.created_at, a.id",
+            new { Language = language, Status = AnimalStatus.Pending });
+        return rows.ToList();
     }
 
     public async Task<bool> SaveTranslationAsync(int id, string language, AnimalTexts texts)
@@ -193,7 +226,7 @@ public class AnimalRepository : IAnimalTranslationStore
             """
             SELECT id, common_name, habitat, range_region, profile
             FROM animals
-            WHERE id = @Id
+            WHERE id = @Id AND status = 'approved'
             """,
             new { Id = id });
     }
@@ -221,18 +254,66 @@ public class AnimalRepository : IAnimalTranslationStore
             FROM animals a
             LEFT JOIN animal_translations german ON german.animal_id = a.id AND german.language = 'de'
             LEFT JOIN animal_translations french ON french.animal_id = a.id AND french.language = 'fr'
+            WHERE a.status = 'approved'
             ORDER BY a.id
             """);
         return rows.Select(ToRecord).ToList();
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<AnimalDeleteResult> DeleteAsync(int id, bool pendingTesterOnly)
     {
         await using var connection = new MySqlConnection(_connectionString);
         var affected = await connection.ExecuteAsync(
-            "DELETE FROM animals WHERE id = @Id",
+            pendingTesterOnly
+                ? "DELETE FROM animals WHERE id = @Id AND status = 'pending' AND submitted_by = 'tester'"
+                : "DELETE FROM animals WHERE id = @Id",
             new { Id = id });
-        return affected > 0;
+        if (affected > 0)
+        {
+            return new AnimalDeleteResult(AnimalDeleteStatus.Deleted);
+        }
+
+        if (!pendingTesterOnly)
+        {
+            return new AnimalDeleteResult(AnimalDeleteStatus.NotFound);
+        }
+
+        var exists = await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM animals WHERE id = @Id",
+            new { Id = id });
+        return new AnimalDeleteResult(exists == 0 ? AnimalDeleteStatus.NotFound : AnimalDeleteStatus.Forbidden);
+    }
+
+    public async Task<AnimalReviewResult> ApproveAsync(int id)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        var affected = await connection.ExecuteAsync(
+            "UPDATE animals SET status = 'approved', reviewed_at = CURRENT_TIMESTAMP, review_note = NULL WHERE id = @Id AND status = 'pending'",
+            new { Id = id });
+        return await GetReviewResultAsync(connection, id, affected);
+    }
+
+    public async Task<AnimalReviewResult> RejectAsync(int id, string? note)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+        var trimmedNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        var affected = await connection.ExecuteAsync(
+            "UPDATE animals SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP, review_note = @Note WHERE id = @Id AND status = 'pending'",
+            new { Id = id, Note = trimmedNote });
+        return await GetReviewResultAsync(connection, id, affected);
+    }
+
+    private static async Task<AnimalReviewResult> GetReviewResultAsync(MySqlConnection connection, int id, int affected)
+    {
+        if (affected > 0)
+        {
+            return new AnimalReviewResult(AnimalReviewStatus.Done);
+        }
+
+        var status = await connection.QuerySingleOrDefaultAsync<string>(
+            "SELECT status FROM animals WHERE id = @Id",
+            new { Id = id });
+        return new AnimalReviewResult(status is null ? AnimalReviewStatus.NotFound : AnimalReviewStatus.NotPending);
     }
 
     private static EnglishAnimalRecord ToRecord(TranslationListRow row)
@@ -292,6 +373,14 @@ public class AnimalRepository : IAnimalTranslationStore
             request.Profile,
             request.SourceUrl
         });
+    }
+
+    private static DynamicParameters CreateParameters(CreateAnimalRequest request, string status, string submittedBy)
+    {
+        var parameters = ToParameters(request);
+        parameters.Add("Status", status);
+        parameters.Add("SubmittedBy", submittedBy);
+        return parameters;
     }
 
     private static async Task InsertImagesAsync(

@@ -18,18 +18,18 @@ public class StatsRepository : IStatsRepository
     {
         await using var connection = new MySqlConnection(_connectionString);
         var stats = new AnimalStats();
-        stats.TotalAnimals = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM animals");
+        stats.TotalAnimals = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM animals WHERE status = 'approved'");
         stats.DomesticatedAnimals =
-            await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM animals WHERE is_domesticated = 1");
+            await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM animals WHERE is_domesticated = 1 AND status = 'approved'");
 
         var classRows = await connection.QueryAsync<(string Name, long Count)>(
-            "SELECT COALESCE(taxonomic_class, 'unknown'), COUNT(*) FROM animals GROUP BY 1");
+            "SELECT COALESCE(taxonomic_class, 'unknown'), COUNT(*) FROM animals WHERE status = 'approved' GROUP BY 1");
         stats.ByClass = classRows.ToDictionary(row => row.Name, row => (int)row.Count);
         var iucnRows = await connection.QueryAsync<(string Name, long Count)>(
-            "SELECT COALESCE(iucn_status, 'unknown'), COUNT(*) FROM animals GROUP BY 1");
+            "SELECT COALESCE(iucn_status, 'unknown'), COUNT(*) FROM animals WHERE status = 'approved' GROUP BY 1");
         stats.ByIucnStatus = iucnRows.ToDictionary(row => row.Name, row => (int)row.Count);
         var habitatRows = await connection.QueryAsync<(string Name, long Count)>(
-            "SELECT COALESCE(habitat_type, 'unknown'), COUNT(*) FROM animals GROUP BY 1");
+            "SELECT COALESCE(habitat_type, 'unknown'), COUNT(*) FROM animals WHERE status = 'approved' GROUP BY 1");
         stats.ByHabitatType = habitatRows.ToDictionary(row => row.Name, row => (int)row.Count);
 
         return stats;

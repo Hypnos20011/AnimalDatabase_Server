@@ -132,13 +132,20 @@ UNLOCK TABLES;
 commit;
 
 --
--- Later schema changes (Database/habitat_type.sql, Database/source_url.sql, Database/animal_translations.sql).
+-- Later schema changes (Database/habitat_type.sql, Database/source_url.sql, Database/animal_translations.sql, Database/animal_status.sql).
 -- Added after the data because the INSERT above lists its values by position.
 --
 
 ALTER TABLE `animals`
   ADD COLUMN `habitat_type` varchar(30) DEFAULT NULL,
   ADD COLUMN `source_url` varchar(500) DEFAULT NULL;
+
+ALTER TABLE `animals`
+    ADD COLUMN `status` ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved',
+    ADD COLUMN `submitted_by` ENUM('tester','admin') NOT NULL DEFAULT 'admin',
+    ADD COLUMN `reviewed_at` TIMESTAMP NULL DEFAULT NULL,
+    ADD COLUMN `review_note` VARCHAR(500) DEFAULT NULL,
+    ADD INDEX `idx_animals_status` (`status`);
 
 CREATE TABLE `animal_translations` (
   `animal_id` int(11) NOT NULL,

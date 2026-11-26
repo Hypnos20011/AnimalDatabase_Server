@@ -29,19 +29,7 @@ public sealed class RequireRoleAttribute : Attribute, IAuthorizationFilter
         }
 
         var provided = context.HttpContext.Request.Headers[AdminKey.HeaderName].ToString();
-        Role? role = null;
-        if (AdminKey.Matches(configuredAdminKey, provided))
-        {
-            role = Role.Admin;
-        }
-        else
-        {
-            var configuredTesterKey = configuration[AdminKey.TesterConfigurationKey];
-            if (!string.IsNullOrWhiteSpace(configuredTesterKey) && AdminKey.Matches(configuredTesterKey, provided))
-            {
-                role = Role.Tester;
-            }
-        }
+        var role = RoleResolver.Resolve(configuration, provided);
 
         if (role is null)
         {

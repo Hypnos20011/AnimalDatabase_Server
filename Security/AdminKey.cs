@@ -7,6 +7,7 @@ public static class AdminKey
 {
     public const string HeaderName = "X-Admin-Key";
     public const string ConfigurationKey = "Admin:ApiKey";
+    public const string TesterConfigurationKey = "Admin:TesterKey";
 
     public static bool Matches(string configured, string? provided)
     {

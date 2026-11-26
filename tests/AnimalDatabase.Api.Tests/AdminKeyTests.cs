@@ -1,7 +1,7 @@
+using System.Net;
 using System.Reflection;
+using System.Text.Json;
 using AnimalDatabase.Api.Controllers;
-using AnimalDatabase.Api.Data;
-using AnimalDatabase.Api.Models;
 using AnimalDatabase.Api.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +17,22 @@ namespace AnimalDatabase.Api.Tests;
 public class AdminKeyTests
 {
     private const string Key = "test-admin-key-0123456789";
+    private const string TesterKey = "test-tester-key-0123456789";
 
-    private static AuthorizationFilterContext Run(string? configuredKey, string? headerKey)
+    private static AuthorizationFilterContext Run(
+        string? configuredKey,
+        string? headerKey,
+        string? configuredTesterKey = null,
+        Role requiredRole = Role.Admin)
     {
         var settings = new Dictionary<string, string?>();
         if (configuredKey is not null)
         {
             settings[AdminKey.ConfigurationKey] = configuredKey;
+        }
+        if (configuredTesterKey is not null)
+        {
+            settings[AdminKey.TesterConfigurationKey] = configuredTesterKey;
         }
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
         var services = new ServiceCollection()
@@ -36,7 +45,7 @@ public class AdminKeyTests
         }
         var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         var context = new AuthorizationFilterContext(actionContext, new List<IFilterMetadata>());
-        new RequireAdminKeyAttribute().OnAuthorization(context);
+        new RequireRoleAttribute(requiredRole).OnAuthorization(context);
         return context;
     }
 
@@ -68,7 +77,45 @@ public class AdminKeyTests
     [Fact]
     public void Right_key_passes()
     {
-        Assert.Null(Run(Key, Key).Result);
+        var context = Run(Key, Key);
+        Assert.Null(context.Result);
+        Assert.Equal(Role.Admin, context.HttpContext.Items[RequireRoleAttribute.RoleItemKey]);
+    }
+
+    [Fact]
+    public void Tester_key_passes_tester_role_and_is_stored_in_http_context()
+    {
+        var context = Run(Key, TesterKey, TesterKey, Role.Tester);
+
+        Assert.Null(context.Result);
+        Assert.Equal(Role.Tester, context.HttpContext.Items[RequireRoleAttribute.RoleItemKey]);
+    }
+
+    [Fact]
+    public void Tester_key_is_forbidden_for_admin_role()
+    {
+        var context = Run(Key, TesterKey, TesterKey);
+
+        Assert.Equal(StatusCodes.Status403Forbidden, StatusOf(context));
+        Assert.Equal(Role.Tester, context.HttpContext.Items[RequireRoleAttribute.RoleItemKey]);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Blank_tester_key_is_rejected_with_401(string? configuredTesterKey)
+    {
+        Assert.Equal(StatusCodes.Status401Unauthorized, StatusOf(Run(Key, TesterKey, configuredTesterKey, Role.Tester)));
+    }
+
+    [Fact]
+    public void Admin_key_takes_precedence_when_keys_match()
+    {
+        var context = Run(Key, Key, Key, Role.Tester);
+
+        Assert.Null(context.Result);
+        Assert.Equal(Role.Admin, context.HttpContext.Items[RequireRoleAttribute.RoleItemKey]);
     }
 
     [Theory]
@@ -79,6 +126,8 @@ public class AdminKeyTests
     {
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, StatusOf(Run(configured, Key)));
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, StatusOf(Run(configured, null)));
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable,
+            StatusOf(Run(configured, TesterKey, TesterKey, Role.Tester)));
     }
 
     [Fact]
@@ -90,9 +139,79 @@ public class AdminKeyTests
     }
 
     [Fact]
-    public void Admin_check_returns_204()
+    public async Task Admin_check_returns_role_for_each_key()
     {
-        Assert.IsType<NoContentResult>(new AdminController(new UnusedTranslationStore()).Check());
+        await AssertCheckRole(ApiFactory.TestKey, "admin");
+        await AssertCheckRole(ApiFactory.TesterKey, "tester");
+    }
+
+    private static async Task AssertCheckRole(string key, string expectedRole)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/admin/check");
+        request.Headers.Add(AdminKey.HeaderName, key);
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(expectedRole, document.RootElement.GetProperty("role").GetString());
+    }
+
+    [Fact]
+    public async Task Tester_key_is_allowed_for_wikipedia_import()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/wikipedia/import?q=");
+        request.Headers.Add(AdminKey.HeaderName, ApiFactory.TesterKey);
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("POST", "/api/animals")]
+    [InlineData("PUT", "/api/animals/1")]
+    public async Task Tester_key_is_allowed_for_animal_create_and_update(string method, string path)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+        request.Headers.Add(AdminKey.HeaderName, ApiFactory.TesterKey);
+        request.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("GET", "/api/admin/missing-translations")]
+    [InlineData("PUT", "/api/animals/1/translations/de")]
+    [InlineData("POST", "/api/animals/1/translate-missing")]
+    [InlineData("DELETE", "/api/animals/1")]
+    [InlineData("POST", "/api/translate?lang=de")]
+    public async Task Tester_key_is_forbidden_for_each_admin_only_endpoint(string method, string path)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+        request.Headers.Add(AdminKey.HeaderName, ApiFactory.TesterKey);
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Blank_tester_key_is_rejected_by_check_with_401()
+    {
+        using var factory = new ApiFactory(settings: new() { [AdminKey.TesterConfigurationKey] = " " });
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/admin/check");
+        request.Headers.Add(AdminKey.HeaderName, ApiFactory.TesterKey);
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     private static IEnumerable<(Type Controller, MethodInfo Action, string Method)> Endpoints()
@@ -115,8 +234,8 @@ public class AdminKeyTests
     }
 
     private static bool IsProtected(Type controller, MethodInfo action) =>
-        action.GetCustomAttribute<RequireAdminKeyAttribute>() is not null
-        || controller.GetCustomAttribute<RequireAdminKeyAttribute>() is not null;
+        action.GetCustomAttribute<RequireRoleAttribute>() is not null
+        || controller.GetCustomAttribute<RequireRoleAttribute>() is not null;
 
     [Fact]
     public void Every_animal_write_needs_the_key()
@@ -150,18 +269,4 @@ public class AdminKeyTests
         Assert.All(open, endpoint => Assert.False(IsProtected(endpoint.Controller, endpoint.Action), endpoint.Action.Name));
     }
 
-    private sealed class UnusedTranslationStore : IAnimalTranslationStore
-    {
-        public Task<AnimalTexts?> GetTranslationAsync(int id, string language) =>
-            throw new NotSupportedException();
-
-        public Task<bool> SaveTranslationAsync(int id, string language, AnimalTexts texts) =>
-            throw new NotSupportedException();
-
-        public Task<EnglishAnimal?> GetEnglishAsync(int id) =>
-            throw new NotSupportedException();
-
-        public Task<IReadOnlyList<EnglishAnimalRecord>> ListEnglishAsync() =>
-            throw new NotSupportedException();
-    }
 }

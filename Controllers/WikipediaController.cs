@@ -27,7 +27,7 @@ public class WikipediaController : ControllerBase
 
     [HttpGet("import")]
     [EnableRateLimiting(RateLimitPolicies.WikipediaImport)]
-    [RequireAdminKey]
+    [RequireRole(Role.Tester)]
     public async Task<ActionResult<WikipediaImportResult>> Import([FromQuery] string q)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length > 300)

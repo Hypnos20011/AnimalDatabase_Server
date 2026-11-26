@@ -171,9 +171,22 @@ public class AdminKeyTests
     }
 
     [Theory]
-    [InlineData("GET", "/api/admin/missing-translations")]
     [InlineData("POST", "/api/animals")]
     [InlineData("PUT", "/api/animals/1")]
+    public async Task Tester_key_is_allowed_for_animal_create_and_update(string method, string path)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+        request.Headers.Add(AdminKey.HeaderName, ApiFactory.TesterKey);
+        request.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("GET", "/api/admin/missing-translations")]
     [InlineData("PUT", "/api/animals/1/translations/de")]
     [InlineData("POST", "/api/animals/1/translate-missing")]
     [InlineData("DELETE", "/api/animals/1")]

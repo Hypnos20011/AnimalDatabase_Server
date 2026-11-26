@@ -65,7 +65,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPost]
-    [RequireRole(Role.Admin)]
+    [RequireRole(Role.Tester)]
     public async Task<ActionResult<Animal>> Create(CreateAnimalRequest request)
     {
         var animal = await _repository.CreateAsync(request);
@@ -74,7 +74,7 @@ public class AnimalsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [RequireRole(Role.Admin)]
+    [RequireRole(Role.Tester)]
     public async Task<ActionResult<Animal>> Update(int id, CreateAnimalRequest request)
     {
         var animal = await _repository.UpdateAsync(id, request);

@@ -23,8 +23,8 @@ public class AnAgeSource
 
             _animals[key] = new TraitData
             {
-                WeightKgMax = weightGrams / 1000,
-                LifespanYearsMax = longevity is null ? null : (int)Math.Round(longevity.Value)
+                WeightGramsMax = weightGrams is null ? null : UnitConversion.GramsToGrams(weightGrams.Value),
+                LifespanMonthsMax = longevity is null ? null : UnitConversion.YearsToMonths(longevity.Value)
             };
         }
     }

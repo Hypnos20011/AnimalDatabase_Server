@@ -65,9 +65,9 @@ public class WikipediaController : ControllerBase
                     TraitMerger.FillMissing(result, seaTraits, "FishBase/SeaLifeBase");
                 }
 
-                var missingLength = result.SizeLengthCmMin is null && result.SizeLengthCmMax is null;
-                var missingWeight = result.WeightKgMin is null && result.WeightKgMax is null;
-                var missingLifespan = result.LifespanYearsMin is null && result.LifespanYearsMax is null;
+                var missingLength = result.LengthMmMin is null && result.LengthMmMax is null;
+                var missingWeight = result.WeightGramsMin is null && result.WeightGramsMax is null;
+                var missingLifespan = result.LifespanMonthsMin is null && result.LifespanMonthsMax is null;
                 if (missingLength || missingWeight || missingLifespan)
                 {
                     var rangeText = await _eol.FindRangeTextAsync(result.ScientificName);

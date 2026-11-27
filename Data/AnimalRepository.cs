@@ -18,14 +18,14 @@ public class AnimalRepository : IAnimalTranslationStore, IAnimalRepository
         " a.family," +
         " a.taxonomic_class," +
         " a.is_domesticated," +
-        "a.size_length_cm_min," +
-        " a.size_length_cm_max," +
-        " a.size_height_cm_min," +
-        " a.size_height_cm_max," +
-        "a.weight_kg_min," +
-        " a.weight_kg_max," +
-        " a.lifespan_years_min," +
-        " a.lifespan_years_max,a.iucn_status," +
+        "a.length_mm_min," +
+        " a.length_mm_max," +
+        " a.height_mm_min," +
+        " a.height_mm_max," +
+        "a.weight_grams_min," +
+        " a.weight_grams_max," +
+        " a.lifespan_months_min," +
+        " a.lifespan_months_max,a.iucn_status," +
         " COALESCE(t.habitat, a.habitat) AS habitat, a.habitat_type, " +
         "COALESCE(t.range_region, a.range_region) AS range_region, " +
         "COALESCE(t.profile, a.profile) AS profile, " +
@@ -89,14 +89,14 @@ public class AnimalRepository : IAnimalTranslationStore, IAnimalRepository
             """
             INSERT INTO animals (
                 common_name, scientific_name, family, taxonomic_class, is_domesticated,
-                size_length_cm_min, size_length_cm_max, size_height_cm_min, size_height_cm_max,
-                weight_kg_min, weight_kg_max, lifespan_years_min, lifespan_years_max,
+                length_mm_min, length_mm_max, height_mm_min, height_mm_max,
+                weight_grams_min, weight_grams_max, lifespan_months_min, lifespan_months_max,
                 iucn_status, habitat, habitat_type, range_region, profile, source_url,
                 status, submitted_by, reviewed_at)
             VALUES (
                 @CommonName, @ScientificName, @Family, @TaxonomicClass, @IsDomesticated,
-                @SizeLengthCmMin, @SizeLengthCmMax, @SizeHeightCmMin, @SizeHeightCmMax,
-                @WeightKgMin, @WeightKgMax, @LifespanYearsMin, @LifespanYearsMax,
+                @LengthMmMin, @LengthMmMax, @HeightMmMin, @HeightMmMax,
+                @WeightGramsMin, @WeightGramsMax, @LifespanMonthsMin, @LifespanMonthsMax,
                 @IucnStatus, @Habitat, @HabitatType, @RangeRegion, @Profile, @SourceUrl,
                 @Status, @SubmittedBy, NULL);
             SELECT LAST_INSERT_ID();
@@ -142,14 +142,14 @@ public class AnimalRepository : IAnimalTranslationStore, IAnimalRepository
                 family = @Family,
                 taxonomic_class = @TaxonomicClass,
                 is_domesticated = @IsDomesticated,
-                size_length_cm_min = @SizeLengthCmMin,
-                size_length_cm_max = @SizeLengthCmMax,
-                size_height_cm_min = @SizeHeightCmMin,
-                size_height_cm_max = @SizeHeightCmMax,
-                weight_kg_min = @WeightKgMin,
-                weight_kg_max = @WeightKgMax,
-                lifespan_years_min = @LifespanYearsMin,
-                lifespan_years_max = @LifespanYearsMax,
+                length_mm_min = @LengthMmMin,
+                length_mm_max = @LengthMmMax,
+                height_mm_min = @HeightMmMin,
+                height_mm_max = @HeightMmMax,
+                weight_grams_min = @WeightGramsMin,
+                weight_grams_max = @WeightGramsMax,
+                lifespan_months_min = @LifespanMonthsMin,
+                lifespan_months_max = @LifespanMonthsMax,
                 iucn_status = @IucnStatus,
                 habitat = @Habitat,
                 habitat_type = @HabitatType,
@@ -349,30 +349,29 @@ public class AnimalRepository : IAnimalTranslationStore, IAnimalRepository
         };
     }
 
-    private static DynamicParameters ToParameters(CreateAnimalRequest request)
+    internal static DynamicParameters ToParameters(CreateAnimalRequest request)
     {
-        return new DynamicParameters(new
-        {
-            request.CommonName,
-            request.ScientificName,
-            request.Family,
-            request.TaxonomicClass,
-            request.IsDomesticated,
-            request.SizeLengthCmMin,
-            request.SizeLengthCmMax,
-            request.SizeHeightCmMin,
-            request.SizeHeightCmMax,
-            request.WeightKgMin,
-            request.WeightKgMax,
-            request.LifespanYearsMin,
-            request.LifespanYearsMax,
-            request.IucnStatus,
-            request.Habitat,
-            request.HabitatType,
-            request.RangeRegion,
-            request.Profile,
-            request.SourceUrl
-        });
+        var parameters = new DynamicParameters();
+        parameters.Add("CommonName", request.CommonName);
+        parameters.Add("ScientificName", request.ScientificName);
+        parameters.Add("Family", request.Family);
+        parameters.Add("TaxonomicClass", request.TaxonomicClass);
+        parameters.Add("IsDomesticated", request.IsDomesticated);
+        parameters.Add("LengthMmMin", request.LengthMmMin);
+        parameters.Add("LengthMmMax", request.LengthMmMax);
+        parameters.Add("HeightMmMin", request.HeightMmMin);
+        parameters.Add("HeightMmMax", request.HeightMmMax);
+        parameters.Add("WeightGramsMin", request.WeightGramsMin);
+        parameters.Add("WeightGramsMax", request.WeightGramsMax);
+        parameters.Add("LifespanMonthsMin", request.LifespanMonthsMin);
+        parameters.Add("LifespanMonthsMax", request.LifespanMonthsMax);
+        parameters.Add("IucnStatus", request.IucnStatus);
+        parameters.Add("Habitat", request.Habitat);
+        parameters.Add("HabitatType", request.HabitatType);
+        parameters.Add("RangeRegion", request.RangeRegion);
+        parameters.Add("Profile", request.Profile);
+        parameters.Add("SourceUrl", request.SourceUrl);
+        return parameters;
     }
 
     private static DynamicParameters CreateParameters(CreateAnimalRequest request, string status, string submittedBy)

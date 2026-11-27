@@ -14,9 +14,9 @@ public class SeaLifeBaseSourceTests
         var traits = Source().Find("Homarus gammarus");
 
         Assert.NotNull(traits);
-        Assert.Equal(65m, traits.SizeLengthCmMax);
-        Assert.Equal(6m, traits.WeightKgMax);
-        Assert.Equal(72, traits.LifespanYearsMax);
+        Assert.Equal(650m, traits.LengthMmMax);
+        Assert.Equal(6000m, traits.WeightGramsMax);
+        Assert.Equal(864m, traits.LifespanMonthsMax);
     }
 
     [Fact]
@@ -25,8 +25,8 @@ public class SeaLifeBaseSourceTests
         var traits = Source().Find("Macrocheira kaempferi");
 
         Assert.NotNull(traits);
-        Assert.Null(traits.SizeLengthCmMax);
-        Assert.Equal(13.6m, traits.WeightKgMax);
+        Assert.Null(traits.LengthMmMax);
+        Assert.Equal(13600m, traits.WeightGramsMax);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class SeaLifeBaseSourceTests
         var traits = Source().Find("Micropterus chattahoochae");
 
         Assert.NotNull(traits);
-        Assert.Null(traits.WeightKgMax);
+        Assert.Null(traits.WeightGramsMax);
     }
 
     [Fact]

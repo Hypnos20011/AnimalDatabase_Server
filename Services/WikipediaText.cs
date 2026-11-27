@@ -12,7 +12,7 @@ internal static class WikipediaText
     private const string Number = @"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?";
 
     private const string Unit =
-        @"(?:mm|millimet(?:re|er)s?|cm|centimet(?:re|er)s?|met(?:re|er)s?|m|inch(?:es)?|in(?=\s*(?:[.,;:)]|$))|ft|feet|foot|kg|kilo(?:gram|gramme)s?|g|grams?|grammes?|lbs?|pounds?|oz|ounces?|tonnes?|years?|yrs?)(?![\p{L}/²³])";
+        @"(?:mm|millimet(?:re|er)s?|cm|centimet(?:re|er)s?|met(?:re|er)s?|m|inch(?:es)?|in(?=\s*(?:[.,;:)]|$))|ft|feet|foot|kg|kilo(?:gram|gramme)s?|g|grams?|grammes?|lbs?|pounds?|oz|ounces?|tonnes?|years?|yrs?|months?|weeks?)(?![\p{L}/²³])";
 
     private const string NumberWord =
         @"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)";
@@ -84,7 +84,7 @@ internal static class WikipediaText
 
     private static readonly Regex LifespanExclusions =
         new(
-            @"\b(?:generations?|ago|million|since|until|every|per|old|population|populations|cycle|season|incubat\w*|gestat\w*|months?|days?|weeks?)\b",
+            @"\b(?:generations?|ago|million|since|until|every|per|old|population|populations|cycle|season|incubat\w*|gestat\w*|days?)\b",
             Ci);
 
     private static readonly Regex SizeSection =
@@ -427,8 +427,8 @@ internal static class WikipediaText
                 }
 
                 var factor = Factor(unit);
-                var low = a * factor;
-                var high = (b ?? a) * factor;
+                var low = Round(a * factor, quantity);
+                var high = Round((b ?? a) * factor, quantity);
                 if (!InBounds(low, quantity) || !InBounds(high, quantity))
                 {
                     continue;
@@ -452,6 +452,16 @@ internal static class WikipediaText
         return found;
     }
 
+    private static decimal Round(decimal value, Quantity quantity)
+    {
+        return quantity switch
+        {
+            Quantity.Length => UnitConversion.RoundLengthMillimetres(value),
+            Quantity.Weight => UnitConversion.RoundGrams(value),
+            _ => UnitConversion.RoundMonths(value)
+        };
+    }
+
     private static bool TryNumber(string value, out decimal number)
     {
         return decimal.TryParse(value.Replace(",", string.Empty), NumberStyles.Float, CultureInfo.InvariantCulture,
@@ -462,9 +472,9 @@ internal static class WikipediaText
     {
         return quantity switch
         {
-            Quantity.Length => value is >= 0.05m and <= 4000m,
-            Quantity.Weight => value is >= 0.0005m and <= 9999999.99m,
-            _ => value is >= 1m and <= 250m
+            Quantity.Length => value is >= 0.5m and <= 40000m,
+            Quantity.Weight => value is >= 0.5m and <= 9999999999.999m,
+            _ => value is >= 0.1m and <= 3000m
         };
     }
 
@@ -478,7 +488,8 @@ internal static class WikipediaText
             "kg" or "g" or "oz" or "lb" or "lbs" => Quantity.Weight,
             _ when unit.StartsWith("kilo") || unit.StartsWith("gram") || unit.StartsWith("pound") ||
                    unit.StartsWith("ounce") || unit.StartsWith("tonne") => Quantity.Weight,
-            _ when unit.StartsWith("year") || unit.StartsWith("yr") => Quantity.Lifespan,
+            _ when unit.StartsWith("year") || unit.StartsWith("yr") || unit.StartsWith("month") ||
+                   unit.StartsWith("week") => Quantity.Lifespan,
             _ => null
         };
     }
@@ -487,24 +498,27 @@ internal static class WikipediaText
     {
         return unit switch
         {
-            "mm" => 0.1m,
-            "cm" => 1m,
-            "m" => 100m,
-            "in" => 2.54m,
-            "ft" or "feet" or "foot" => 30.48m,
-            "kg" => 1m,
-            "g" => 0.001m,
-            "oz" => 0.028349523125m,
-            "lb" or "lbs" => 0.45359237m,
-            _ when unit.StartsWith("millimet") => 0.1m,
-            _ when unit.StartsWith("centimet") => 1m,
-            _ when unit.StartsWith("met") => 100m,
-            _ when unit.StartsWith("inch") => 2.54m,
-            _ when unit.StartsWith("kilo") => 1m,
-            _ when unit.StartsWith("gram") => 0.001m,
-            _ when unit.StartsWith("pound") => 0.45359237m,
-            _ when unit.StartsWith("ounce") => 0.028349523125m,
-            _ when unit.StartsWith("tonne") => 1000m,
+            "mm" => 1m,
+            "cm" => 10m,
+            "m" => 1000m,
+            "in" => 25.4m,
+            "ft" or "feet" or "foot" => 304.8m,
+            "kg" => 1000m,
+            "g" => 1m,
+            "oz" => 28.349523125m,
+            "lb" or "lbs" => 453.59237m,
+            _ when unit.StartsWith("millimet") => 1m,
+            _ when unit.StartsWith("centimet") => 10m,
+            _ when unit.StartsWith("met") => 1000m,
+            _ when unit.StartsWith("inch") => 25.4m,
+            _ when unit.StartsWith("kilo") => 1000m,
+            _ when unit.StartsWith("gram") => 1m,
+            _ when unit.StartsWith("pound") => 453.59237m,
+            _ when unit.StartsWith("ounce") => 28.349523125m,
+            _ when unit.StartsWith("tonne") => 1000000m,
+            _ when unit.StartsWith("month") => 1m,
+            _ when unit.StartsWith("week") => 12m / 52m,
+            _ when unit.StartsWith("year") || unit.StartsWith("yr") => 12m,
             _ => 1m
         };
     }

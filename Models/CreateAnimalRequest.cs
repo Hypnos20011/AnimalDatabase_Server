@@ -14,21 +14,21 @@ public class CreateAnimalRequest : IValidatableObject
 
     public bool IsDomesticated { get; set; }
 
-    [Range(0, 999999.9)] public decimal? SizeLengthCmMin { get; set; }
+    [Range(typeof(decimal), "0", "9999999.99", ParseLimitsInInvariantCulture = true)] public decimal? LengthMmMin { get; set; }
 
-    [Range(0, 999999.9)] public decimal? SizeLengthCmMax { get; set; }
+    [Range(typeof(decimal), "0", "9999999.99", ParseLimitsInInvariantCulture = true)] public decimal? LengthMmMax { get; set; }
 
-    [Range(0, 999999.9)] public decimal? SizeHeightCmMin { get; set; }
+    [Range(typeof(decimal), "0", "9999999.99", ParseLimitsInInvariantCulture = true)] public decimal? HeightMmMin { get; set; }
 
-    [Range(0, 999999.9)] public decimal? SizeHeightCmMax { get; set; }
+    [Range(typeof(decimal), "0", "9999999.99", ParseLimitsInInvariantCulture = true)] public decimal? HeightMmMax { get; set; }
 
-    [Range(0, 9999999.99)] public decimal? WeightKgMin { get; set; }
+    [Range(typeof(decimal), "0", "9999999999.999", ParseLimitsInInvariantCulture = true)] public decimal? WeightGramsMin { get; set; }
 
-    [Range(0, 9999999.99)] public decimal? WeightKgMax { get; set; }
+    [Range(typeof(decimal), "0", "9999999999.999", ParseLimitsInInvariantCulture = true)] public decimal? WeightGramsMax { get; set; }
 
-    [Range(0, int.MaxValue)] public int? LifespanYearsMin { get; set; }
+    [Range(typeof(decimal), "0", "99999.9", ParseLimitsInInvariantCulture = true)] public decimal? LifespanMonthsMin { get; set; }
 
-    [Range(0, int.MaxValue)] public int? LifespanYearsMax { get; set; }
+    [Range(typeof(decimal), "0", "99999.9", ParseLimitsInInvariantCulture = true)] public decimal? LifespanMonthsMax { get; set; }
 
     [MaxLength(40)]
     [AllowedValues("least concern", "near threatened", "vulnerable", "endangered", "critically endangered",
@@ -55,10 +55,10 @@ public class CreateAnimalRequest : IValidatableObject
     {
         (string Label, decimal? Min, decimal? Max, string Member)[] ranges =
         [
-            ("Length", SizeLengthCmMin, SizeLengthCmMax, nameof(SizeLengthCmMin)),
-            ("Height", SizeHeightCmMin, SizeHeightCmMax, nameof(SizeHeightCmMin)),
-            ("Weight", WeightKgMin, WeightKgMax, nameof(WeightKgMin)),
-            ("Lifespan", LifespanYearsMin, LifespanYearsMax, nameof(LifespanYearsMin))
+            ("Length", LengthMmMin, LengthMmMax, nameof(LengthMmMin)),
+            ("Height", HeightMmMin, HeightMmMax, nameof(HeightMmMin)),
+            ("Weight", WeightGramsMin, WeightGramsMax, nameof(WeightGramsMin)),
+            ("Lifespan", LifespanMonthsMin, LifespanMonthsMax, nameof(LifespanMonthsMin))
         ];
 
         if (!string.IsNullOrEmpty(SourceUrl) &&

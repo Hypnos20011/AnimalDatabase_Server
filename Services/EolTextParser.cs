@@ -9,45 +9,45 @@ public class EolTextParser
     private const string ValuePattern =
         @"\s*([\d.,]+)(?:\s*to\s*([\d.,]+))?\s*(?:\((high|low)\))?\s*([a-z]+)";
 
-    private static readonly Dictionary<string, decimal> MassToKg = new()
+    private static readonly Dictionary<string, decimal> MassToGrams = new()
     {
-        ["g"] = 0.001m,
-        ["kg"] = 1
+        ["g"] = 1m,
+        ["kg"] = 1000m
     };
 
-    private static readonly Dictionary<string, decimal> LengthToCm = new()
+    private static readonly Dictionary<string, decimal> LengthToMm = new()
     {
-        ["mm"] = 0.1m,
-        ["cm"] = 1,
-        ["m"] = 100
+        ["mm"] = 1m,
+        ["cm"] = 10m,
+        ["m"] = 1000m
     };
 
-    private static readonly Dictionary<string, decimal> LifespanToYears = new()
+    private static readonly Dictionary<string, decimal> LifespanToMonths = new()
     {
-        ["years"] = 1,
-        ["months"] = 1m / 12,
-        ["days"] = 1m / 365
+        ["years"] = 12m,
+        ["months"] = 1m,
+        ["days"] = 12m / 365m
     };
 
     public static TraitData Parse(string text)
     {
-        var (weightMin, weightMax) = ReadRange(text, "Range mass", MassToKg);
-        var (lengthMin, lengthMax) = ReadRange(text, "Range length", LengthToCm);
-        var (lifeMin, lifeMax) = ReadLifespanRange(text, "wild", LifespanToYears);
+        var (weightMin, weightMax) = ReadRange(text, "Range mass", MassToGrams);
+        var (lengthMin, lengthMax) = ReadRange(text, "Range length", LengthToMm);
+        var (lifeMin, lifeMax) = ReadLifespanRange(text, "wild", LifespanToMonths);
         if (lifeMin is null && lifeMax is null)
         {
-            (lifeMin, lifeMax) = ReadLifespanRange(text, "captivity", LifespanToYears);
+            (lifeMin, lifeMax) = ReadLifespanRange(text, "captivity", LifespanToMonths);
         }
 
 
         return new TraitData
         {
-            WeightKgMin = weightMin,
-            WeightKgMax = weightMax,
-            SizeLengthCmMin = lengthMin,
-            SizeLengthCmMax = lengthMax,
-            LifespanYearsMin = lifeMin is null ? null : (int)Math.Round(lifeMin.Value),
-            LifespanYearsMax = lifeMax is null ? null : (int)Math.Round(lifeMax.Value)
+            WeightGramsMin = weightMin is null ? null : UnitConversion.RoundGrams(weightMin.Value),
+            WeightGramsMax = weightMax is null ? null : UnitConversion.RoundGrams(weightMax.Value),
+            LengthMmMin = lengthMin is null ? null : UnitConversion.RoundLengthMillimetres(lengthMin.Value),
+            LengthMmMax = lengthMax is null ? null : UnitConversion.RoundLengthMillimetres(lengthMax.Value),
+            LifespanMonthsMin = lifeMin is null ? null : UnitConversion.RoundMonths(lifeMin.Value),
+            LifespanMonthsMax = lifeMax is null ? null : UnitConversion.RoundMonths(lifeMax.Value)
         };
     }
 

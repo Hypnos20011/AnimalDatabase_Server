@@ -54,30 +54,30 @@ public class WikipediaImporter
         ])
     ];
 
-    private static readonly Dictionary<string, decimal> MassToKg = new()
+    private static readonly Dictionary<string, decimal> MassToGrams = new()
     {
-        ["Q11570"] = 1m,
-        ["Q41803"] = 0.001m,
-        ["Q191118"] = 1000m,
-        ["Q100995"] = 0.45359237m
+        ["Q11570"] = 1000m,
+        ["Q41803"] = 1m,
+        ["Q191118"] = 1000000m,
+        ["Q100995"] = 453.59237m
     };
 
-    private static readonly Dictionary<string, decimal> LengthToCm = new()
+    private static readonly Dictionary<string, decimal> LengthToMm = new()
     {
-        ["Q174728"] = 1m,
-        ["Q11573"] = 100m,
-        ["Q174789"] = 0.1m,
-        ["Q218593"] = 2.54m,
-        ["Q3710"] = 30.48m
+        ["Q174728"] = 10m,
+        ["Q11573"] = 1000m,
+        ["Q174789"] = 1m,
+        ["Q218593"] = 25.4m,
+        ["Q3710"] = 304.8m
     };
 
-    private static readonly Dictionary<string, decimal> TimeToYears = new()
+    private static readonly Dictionary<string, decimal> TimeToMonths = new()
     {
-        ["Q577"] = 1m,
-        ["Q1092296"] = 1m,
-        ["Q5151"] = 1m / 12m,
-        ["Q23387"] = 1m / 52m,
-        ["Q573"] = 1m / 365m
+        ["Q577"] = 12m,
+        ["Q1092296"] = 12m,
+        ["Q5151"] = 1m,
+        ["Q23387"] = 12m / 52m,
+        ["Q573"] = 12m / 365m
     };
 
     private static readonly string[] BelowFamilyRanks =
@@ -325,36 +325,36 @@ public class WikipediaImporter
             return;
         }
 
-        if (species && result.SizeLengthCmMin is null && result.SizeLengthCmMax is null)
+        if (species && result.LengthMmMin is null && result.LengthMmMax is null)
         {
             var length = WikipediaText.FindMeasurement(sections, WikipediaText.Quantity.Length);
             if (length is not null)
             {
-                result.SizeLengthCmMin = length.Value.Min is { } min ? RoundLength(min) : null;
-                result.SizeLengthCmMax = length.Value.Max is { } max ? RoundLength(max) : null;
+                result.LengthMmMin = length.Value.Min is { } min ? UnitConversion.RoundLengthMillimetres(min) : null;
+                result.LengthMmMax = length.Value.Max is { } max ? UnitConversion.RoundLengthMillimetres(max) : null;
             }
         }
 
-        if (species && result.WeightKgMin is null && result.WeightKgMax is null)
+        if (species && result.WeightGramsMin is null && result.WeightGramsMax is null)
         {
             var weight = WikipediaText.FindMeasurement(sections, WikipediaText.Quantity.Weight);
             if (weight is not null)
             {
-                result.WeightKgMin = weight.Value.Min is { } min ? RoundWeight(min) : null;
-                result.WeightKgMax = weight.Value.Max is { } max ? RoundWeight(max) : null;
+                result.WeightGramsMin = weight.Value.Min is { } min ? UnitConversion.RoundGrams(min) : null;
+                result.WeightGramsMax = weight.Value.Max is { } max ? UnitConversion.RoundGrams(max) : null;
             }
         }
 
-        if (result.LifespanYearsMin is null && result.LifespanYearsMax is null)
+        if (result.LifespanMonthsMin is null && result.LifespanMonthsMax is null)
         {
             var lifespan = WikipediaText.FindMeasurement(sections, WikipediaText.Quantity.Lifespan);
             if (lifespan is not null)
             {
-                result.LifespanYearsMin = lifespan.Value.Min is { } min
-                    ? (int)Math.Round(min, MidpointRounding.AwayFromZero)
+                result.LifespanMonthsMin = lifespan.Value.Min is { } min
+                    ? UnitConversion.RoundMonths(min)
                     : null;
-                result.LifespanYearsMax = lifespan.Value.Max is { } max
-                    ? (int)Math.Round(max, MidpointRounding.AwayFromZero)
+                result.LifespanMonthsMax = lifespan.Value.Max is { } max
+                    ? UnitConversion.RoundMonths(max)
                     : null;
             }
         }
@@ -373,25 +373,25 @@ public class WikipediaImporter
                 : await GetStatusFromLabelAsync(status);
         }
 
-        var weights = GetQuantities(claims, "P2067", MassToKg);
+        var weights = GetQuantities(claims, "P2067", MassToGrams);
         if (weights.Count > 0)
         {
-            result.WeightKgMin = RoundWeight(weights.Min());
-            result.WeightKgMax = RoundWeight(weights.Max());
+            result.WeightGramsMin = UnitConversion.RoundGrams(weights.Min());
+            result.WeightGramsMax = UnitConversion.RoundGrams(weights.Max());
         }
 
-        var lengths = GetQuantities(claims, "P2043", LengthToCm);
+        var lengths = GetQuantities(claims, "P2043", LengthToMm);
         if (lengths.Count > 0)
         {
-            result.SizeLengthCmMin = RoundLength(lengths.Min());
-            result.SizeLengthCmMax = RoundLength(lengths.Max());
+            result.LengthMmMin = UnitConversion.RoundLengthMillimetres(lengths.Min());
+            result.LengthMmMax = UnitConversion.RoundLengthMillimetres(lengths.Max());
         }
 
-        var lifespans = GetQuantities(claims, "P2250", TimeToYears);
+        var lifespans = GetQuantities(claims, "P2250", TimeToMonths);
         if (lifespans.Count > 0)
         {
-            result.LifespanYearsMin = (int)Math.Round(lifespans.Min());
-            result.LifespanYearsMax = (int)Math.Round(lifespans.Max());
+            result.LifespanMonthsMin = UnitConversion.RoundMonths(lifespans.Min());
+            result.LifespanMonthsMax = UnitConversion.RoundMonths(lifespans.Max());
         }
 
         var family = ancestors.FirstOrDefault(a => a.Rank == RankFamily).Name;
@@ -401,18 +401,6 @@ public class WikipediaImporter
         }
 
         result.TaxonomicClass = ClassifyTaxa(ancestors.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase));
-    }
-
-    internal static decimal RoundLength(decimal centimetres)
-    {
-        var rounded = Math.Round(centimetres, 1, MidpointRounding.AwayFromZero);
-        return rounded == 0m && centimetres > 0m ? 0.1m : rounded;
-    }
-
-    internal static decimal RoundWeight(decimal kilograms)
-    {
-        var rounded = Math.Round(kilograms, 2, MidpointRounding.AwayFromZero);
-        return rounded == 0m && kilograms > 0m ? 0.01m : rounded;
     }
 
     internal static string? ClassifyTaxa(HashSet<string> taxa)

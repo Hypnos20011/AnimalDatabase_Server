@@ -11,10 +11,10 @@ public class EolTextParserTests
             EolTextParser.Parse(
                 "<p><strong>Range mass:</strong> 85 to 165 g.</p><p><strong>Range length:</strong> 80 to 160 mm.</p>");
 
-        Assert.Equal(0.085m, traits.WeightKgMin);
-        Assert.Equal(0.165m, traits.WeightKgMax);
-        Assert.Equal(8m, traits.SizeLengthCmMin);
-        Assert.Equal(16m, traits.SizeLengthCmMax);
+        Assert.Equal(85m, traits.WeightGramsMin);
+        Assert.Equal(165m, traits.WeightGramsMax);
+        Assert.Equal(80m, traits.LengthMmMin);
+        Assert.Equal(160m, traits.LengthMmMax);
     }
 
     [Fact]
@@ -23,8 +23,8 @@ public class EolTextParserTests
         var traits =
             EolTextParser.Parse(
                 "<p><strong>Range mass:</strong> 16 to 20 kg.</p><p><strong>Range length:</strong> 3.7 (high)  m.</p>");
-        Assert.Null(traits.SizeLengthCmMin);
-        Assert.Equal(370m, traits.SizeLengthCmMax);
+        Assert.Null(traits.LengthMmMin);
+        Assert.Equal(3700m, traits.LengthMmMax);
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public class EolTextParserTests
     {
         var traits = EolTextParser.Parse("This animal is very unusual.");
 
-        Assert.Null(traits.SizeLengthCmMin);
-        Assert.Null(traits.SizeLengthCmMax);
+        Assert.Null(traits.LengthMmMin);
+        Assert.Null(traits.LengthMmMax);
     }
 
     [Fact]
@@ -41,8 +41,8 @@ public class EolTextParserTests
     {
         var traits = EolTextParser.Parse("<strong>Range lifespan<br><span>Status: captivity</span>:</strong> 22 to 31 years.");
 
-        Assert.Equal(22, traits.LifespanYearsMin);
-        Assert.Equal(31, traits.LifespanYearsMax);
+        Assert.Equal(264m, traits.LifespanMonthsMin);
+        Assert.Equal(372m, traits.LifespanMonthsMax);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class EolTextParserTests
     {
         var traits = EolTextParser.Parse("<strong>Range lifespan<br><span>Status: captivity</span>:</strong> 22 to 31 years.<strong>Range lifespan<br><span>Status: wild</span>:</strong> 8 (high) years.");
 
-        Assert.Null(traits.LifespanYearsMin);
-        Assert.Equal(8, traits.LifespanYearsMax);
+        Assert.Null(traits.LifespanMonthsMin);
+        Assert.Equal(96m, traits.LifespanMonthsMax);
     }
 }

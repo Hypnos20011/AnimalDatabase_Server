@@ -6,13 +6,13 @@ public class AnAgeSourceTests
     private static AnAgeSource Source() => new(Path.Combine(AppContext.BaseDirectory, "Data", "Reference", "anage_data.txt"));
 
     [Fact]
-    public void Finds_the_fennec_fox_in_kilograms()
+    public void Finds_the_fennec_fox_in_grams_and_months()
     {
         var traits = Source().Find("Vulpes zerda");
         
         Assert.NotNull(traits);
-        Assert.Equal(1.25m, traits.WeightKgMax);
-        Assert.Equal(16, traits.LifespanYearsMax);
+        Assert.Equal(1250m, traits.WeightGramsMax);
+        Assert.Equal(195.6m, traits.LifespanMonthsMax);
     }
 
     [Fact]
@@ -33,6 +33,6 @@ public class AnAgeSourceTests
     {
         var traits = Source().Find("Heterocephalus glaber");
         Assert.NotNull(traits);
-        Assert.Equal(31, traits.LifespanYearsMax);
+        Assert.Equal(372m, traits.LifespanMonthsMax);
     }
 }

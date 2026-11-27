@@ -9,12 +9,12 @@ public class WikipediaTextTests
         FindMeasurement(new List<Section> { new(string.Empty, text) }, quantity);
 
     [Theory]
-    [InlineData("Adults measure 30–40 cm (12–16 in) in length.", 30, 40)]
-    [InlineData("The body is 8 to 12 mm long.", 0.8, 1.2)]
-    [InlineData("Adults are 1.5 to 2 m long.", 150, 200)]
-    [InlineData("Adults are 10 to 20 inches long.", 25.4, 50.8)]
-    [InlineData("Adults grow 3 to 4 ft in length.", 91.44, 121.92)]
-    public void Lengths_are_converted_to_centimetres(string text, double min, double max)
+    [InlineData("Adults measure 30–40 cm (12–16 in) in length.", 300, 400)]
+    [InlineData("The body is 8 to 12 mm long.", 8, 12)]
+    [InlineData("Adults are 1.5 to 2 m long.", 1500, 2000)]
+    [InlineData("Adults are 10 to 20 inches long.", 254, 508)]
+    [InlineData("Adults grow 3 to 4 ft in length.", 914.4, 1219.2)]
+    public void Lengths_are_converted_to_millimetres(string text, double min, double max)
     {
         var result = Measure(text, Quantity.Length);
 
@@ -24,16 +24,16 @@ public class WikipediaTextTests
     }
 
     [Theory]
-    [InlineData("Adults weigh 200 to 300 g.", 0.2, 0.3)]
-    [InlineData("Adults weigh 4–7 kg.", 4, 7)]
-    [InlineData("Adults weigh between 10 and 20 lb.", 4.54, 9.07)]
-    public void Weights_are_converted_to_kilograms(string text, double min, double max)
+    [InlineData("Adults weigh 200 to 300 g.", 200, 300)]
+    [InlineData("Adults weigh 4–7 kg.", 4000, 7000)]
+    [InlineData("Adults weigh between 10 and 20 lb.", 4535.924, 9071.847)]
+    public void Weights_are_converted_to_grams(string text, double min, double max)
     {
         var result = Measure(text, Quantity.Weight);
 
         Assert.NotNull(result);
-        Assert.Equal((decimal)min, result.Value.Min!.Value, 2);
-        Assert.Equal((decimal)max, result.Value.Max!.Value, 2);
+        Assert.Equal((decimal)min, result.Value.Min!.Value, 3);
+        Assert.Equal((decimal)max, result.Value.Max!.Value, 3);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class WikipediaTextTests
 
         Assert.NotNull(result);
         Assert.Null(result.Value.Min);
-        Assert.Equal(5m, result.Value.Max);
+        Assert.Equal(5000m, result.Value.Max);
     }
 
     [Fact]
@@ -52,18 +52,28 @@ public class WikipediaTextTests
         var result = Measure("In captivity they can live for more than 20 years.", Quantity.Lifespan);
 
         Assert.NotNull(result);
-        Assert.Equal(20m, result.Value.Min);
+        Assert.Equal(240m, result.Value.Min);
         Assert.Null(result.Value.Max);
     }
 
     [Fact]
-    public void A_lifespan_range_is_read_in_years()
+    public void A_lifespan_range_is_read_in_months()
     {
         var result = Measure("The life expectancy of a wild axolotl is between 10 and 15 years.", Quantity.Lifespan);
 
         Assert.NotNull(result);
-        Assert.Equal(10m, result.Value.Min);
-        Assert.Equal(15m, result.Value.Max);
+        Assert.Equal(120m, result.Value.Min);
+        Assert.Equal(180m, result.Value.Max);
+    }
+
+    [Fact]
+    public void A_two_gram_weight_survives_wikipedia_text_parsing()
+    {
+        var result = Measure("Adults weigh 0.002 kg.", Quantity.Weight);
+
+        Assert.NotNull(result);
+        Assert.Equal(2m, result.Value.Min);
+        Assert.Equal(2m, result.Value.Max);
     }
 
     [Theory]
@@ -85,8 +95,8 @@ public class WikipediaTextTests
             Quantity.Length);
 
         Assert.NotNull(result);
-        Assert.Equal(300m, result.Value.Min);
-        Assert.Equal(400m, result.Value.Max);
+        Assert.Equal(3000m, result.Value.Min);
+        Assert.Equal(4000m, result.Value.Max);
     }
 
     [Fact]
@@ -196,9 +206,9 @@ public class WikipediaTextTests
     }
 
     [Theory]
-    [InlineData("The octopus tends to have a lifespan around two to three years.", 2, 3)]
-    [InlineData("In the wild they live for about twelve years.", 12, 12)]
-    [InlineData("Their life expectancy is between ten and fifteen years.", 10, 15)]
+    [InlineData("The octopus tends to have a lifespan around two to three years.", 24, 36)]
+    [InlineData("In the wild they live for about twelve years.", 144, 144)]
+    [InlineData("Their life expectancy is between ten and fifteen years.", 120, 180)]
     public void Lifespans_written_in_words_are_read(string text, double min, double max)
     {
         var result = Measure(text, Quantity.Lifespan);
@@ -230,7 +240,7 @@ public class WikipediaTextTests
 
         Assert.NotNull(result);
         Assert.Null(result.Value.Min);
-        Assert.Equal(4m, result.Value.Max);
+        Assert.Equal(48m, result.Value.Max);
     }
 
     [Fact]

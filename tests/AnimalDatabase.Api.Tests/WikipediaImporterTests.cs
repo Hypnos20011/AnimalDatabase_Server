@@ -5,7 +5,7 @@ namespace AnimalDatabase.Api.Tests;
 public class WikipediaImporterTests
 {
     [Fact]
-    public async Task Okapi_by_name_is_an_endangered_mammal_weighing_200_to_300_kg()
+    public async Task Okapi_by_name_is_an_endangered_mammal_with_canonical_measurements()
     {
         var (importer, handler) = TestImporter.Create();
 
@@ -17,12 +17,12 @@ public class WikipediaImporterTests
         Assert.Equal("Giraffidae", result.Family);
         Assert.Equal("mammal", result.TaxonomicClass);
         Assert.Equal("endangered", result.IucnStatus);
-        Assert.Equal<decimal?>(200m, result.WeightKgMin);
-        Assert.Equal<decimal?>(300m, result.WeightKgMax);
-        Assert.Equal<decimal?>(250m, result.SizeLengthCmMin);
-        Assert.Equal<decimal?>(250m, result.SizeLengthCmMax);
-        Assert.Equal<int?>(20, result.LifespanYearsMin);
-        Assert.Equal<int?>(30, result.LifespanYearsMax);
+        Assert.Equal<decimal?>(200000m, result.WeightGramsMin);
+        Assert.Equal<decimal?>(300000m, result.WeightGramsMax);
+        Assert.Equal<decimal?>(2500m, result.LengthMmMin);
+        Assert.Equal<decimal?>(2500m, result.LengthMmMax);
+        Assert.Equal<decimal?>(240m, result.LifespanMonthsMin);
+        Assert.Equal<decimal?>(360m, result.LifespanMonthsMax);
         Assert.Equal("Democratic Republic of the Congo", result.RangeRegion);
         Assert.Equal("https://en.wikipedia.org/wiki/Okapi", result.SourceUrl);
         Assert.StartsWith("https://thumb.wikimedia.org/", result.ImageUrl);
@@ -45,8 +45,8 @@ public class WikipediaImporterTests
         Assert.Equal("Okapi", result.CommonName);
         Assert.Equal("mammal", result.TaxonomicClass);
         Assert.Equal("endangered", result.IucnStatus);
-        Assert.Equal<decimal?>(200m, result.WeightKgMin);
-        Assert.Equal<decimal?>(300m, result.WeightKgMax);
+        Assert.Equal<decimal?>(200000m, result.WeightGramsMin);
+        Assert.Equal<decimal?>(300000m, result.WeightGramsMax);
         Assert.DoesNotContain(handler.RequestedKeys, k => k.StartsWith("search/"));
         Assert.Empty(handler.MissingKeys);
     }
@@ -64,8 +64,8 @@ public class WikipediaImporterTests
         Assert.Equal("Daubentoniidae", result.Family);
         Assert.Equal("mammal", result.TaxonomicClass);
         Assert.Equal("endangered", result.IucnStatus);
-        Assert.Equal<decimal?>(2.5m, result.WeightKgMin);
-        Assert.Equal<decimal?>(2.5m, result.WeightKgMax);
+        Assert.Equal<decimal?>(2500m, result.WeightGramsMin);
+        Assert.Equal<decimal?>(2500m, result.WeightGramsMax);
         Assert.Empty(handler.MissingKeys);
     }
 
@@ -82,7 +82,7 @@ public class WikipediaImporterTests
         Assert.Equal("Psychrolutidae", result.Family);
         Assert.Equal("fish", result.TaxonomicClass);
         Assert.Null(result.IucnStatus);
-        Assert.Null(result.WeightKgMin);
+        Assert.Null(result.WeightGramsMin);
         Assert.Equal("https://en.wikipedia.org/wiki/Psychrolutes_marcidus", result.SourceUrl);
         Assert.DoesNotContain(handler.RequestedKeys, k => k.StartsWith("labels/"));
         Assert.Empty(handler.MissingKeys);
@@ -105,32 +105,15 @@ public class WikipediaImporterTests
     }
 
     [Fact]
-    public async Task Tardigrade_length_of_half_a_millimetre_becomes_a_tenth_of_a_centimetre()
+    public async Task Tardigrade_length_of_half_a_millimetre_keeps_canonical_precision()
     {
         var (importer, _) = TestImporter.Create();
 
         var result = await importer.ImportByNameAsync("tardigrade");
 
         Assert.NotNull(result);
-        Assert.Equal<decimal?>(0.1m, result.SizeLengthCmMin);
-        Assert.Equal<decimal?>(0.1m, result.SizeLengthCmMax);
-    }
-
-    [Theory]
-    [InlineData(0.05, 0.1)]
-    [InlineData(0.01, 0.1)]
-    [InlineData(0.0, 0.0)]
-    [InlineData(0.25, 0.3)]
-    [InlineData(0.35, 0.4)]
-    [InlineData(12.34, 12.3)]
-    [InlineData(12.35, 12.4)]
-    [InlineData(149.96, 150.0)]
-    [InlineData(150.0, 150.0)]
-    public void RoundLength_keeps_one_decimal_rounds_half_away_from_zero_and_never_gives_zero_for_a_real_length(
-        double centimetres,
-        double expected)
-    {
-        Assert.Equal((decimal)expected, WikipediaImporter.RoundLength((decimal)centimetres));
+        Assert.Equal<decimal?>(0.5m, result.LengthMmMin);
+        Assert.Equal<decimal?>(0.5m, result.LengthMmMax);
     }
 
     [Fact]

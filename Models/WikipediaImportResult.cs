@@ -6,12 +6,14 @@ public class WikipediaImportResult
     public string? ScientificName { get; set; }
     public string? Family { get; set; }
     public string? TaxonomicClass { get; set; }
-    public decimal? SizeLengthCmMin { get; set; }
-    public decimal? SizeLengthCmMax { get; set; }
-    public decimal? WeightKgMin { get; set; }
-    public decimal? WeightKgMax { get; set; }
-    public int? LifespanYearsMin { get; set; }
-    public int? LifespanYearsMax { get; set; }
+    public decimal? LengthMmMin { get; set; }
+    public decimal? LengthMmMax { get; set; }
+    public decimal? HeightMmMin { get; set; }
+    public decimal? HeightMmMax { get; set; }
+    public decimal? WeightGramsMin { get; set; }
+    public decimal? WeightGramsMax { get; set; }
+    public decimal? LifespanMonthsMin { get; set; }
+    public decimal? LifespanMonthsMax { get; set; }
     public string? IucnStatus { get; set; }
     public string? Habitat { get; set; }
     public string? RangeRegion { get; set; }

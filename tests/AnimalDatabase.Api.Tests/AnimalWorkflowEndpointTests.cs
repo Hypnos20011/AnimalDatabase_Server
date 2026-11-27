@@ -14,6 +14,56 @@ namespace AnimalDatabase.Api.Tests;
 public class AnimalWorkflowEndpointTests
 {
     [Fact]
+    public async Task Create_and_update_round_trip_canonical_measurements()
+    {
+        var repository = new FakeAnimalRepository();
+        using var host = new TestHost(repository);
+        var client = host.CreateClient();
+        var create = new CreateAnimalRequest
+        {
+            CommonName = "Canonical animal",
+            LengthMmMin = 12.34m,
+            LengthMmMax = 56.78m,
+            HeightMmMin = 9.01m,
+            HeightMmMax = 10.02m,
+            WeightGramsMin = 2m,
+            WeightGramsMax = 136000000m,
+            LifespanMonthsMin = 0.1m,
+            LifespanMonthsMax = 99999.9m
+        };
+        using var createRequest = CreateRequest(HttpMethod.Post, "/api/animals", ApiFactory.TestKey,
+            JsonContent.Create(create));
+        using var created = await client.SendAsync(createRequest);
+
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var createdDocument = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        var createdAnimal = createdDocument.RootElement;
+        AssertCanonicalMeasurements(createdAnimal, 12.34m, 56.78m, 9.01m, 10.02m, 2m, 136000000m, 0.1m, 99999.9m);
+        var id = createdAnimal.GetProperty("id").GetInt32();
+
+        var update = new CreateAnimalRequest
+        {
+            CommonName = "Updated canonical animal",
+            LengthMmMin = 87.65m,
+            LengthMmMax = 98.76m,
+            HeightMmMin = 1.23m,
+            HeightMmMax = 4.56m,
+            WeightGramsMin = 0.001m,
+            WeightGramsMax = 2000.005m,
+            LifespanMonthsMin = 1.1m,
+            LifespanMonthsMax = 12.9m
+        };
+        using var updateRequest = CreateRequest(HttpMethod.Put, $"/api/animals/{id}", ApiFactory.TestKey,
+            JsonContent.Create(update));
+        using var updated = await client.SendAsync(updateRequest);
+
+        Assert.Equal(HttpStatusCode.OK, updated.StatusCode);
+        using var updatedDocument = JsonDocument.Parse(await updated.Content.ReadAsStringAsync());
+        AssertCanonicalMeasurements(updatedDocument.RootElement, 87.65m, 98.76m, 1.23m, 4.56m, 0.001m,
+            2000.005m, 1.1m, 12.9m);
+    }
+
+    [Fact]
     public async Task Get_all_passes_the_viewer_role_and_treats_invalid_keys_as_visitors()
     {
         var repository = new FakeAnimalRepository
@@ -355,6 +405,20 @@ public class AnimalWorkflowEndpointTests
         return request;
     }
 
+    private static void AssertCanonicalMeasurements(JsonElement animal, decimal lengthMin, decimal lengthMax,
+        decimal heightMin, decimal heightMax, decimal weightMin, decimal weightMax, decimal lifespanMin,
+        decimal lifespanMax)
+    {
+        Assert.Equal(lengthMin, animal.GetProperty("lengthMmMin").GetDecimal());
+        Assert.Equal(lengthMax, animal.GetProperty("lengthMmMax").GetDecimal());
+        Assert.Equal(heightMin, animal.GetProperty("heightMmMin").GetDecimal());
+        Assert.Equal(heightMax, animal.GetProperty("heightMmMax").GetDecimal());
+        Assert.Equal(weightMin, animal.GetProperty("weightGramsMin").GetDecimal());
+        Assert.Equal(weightMax, animal.GetProperty("weightGramsMax").GetDecimal());
+        Assert.Equal(lifespanMin, animal.GetProperty("lifespanMonthsMin").GetDecimal());
+        Assert.Equal(lifespanMax, animal.GetProperty("lifespanMonthsMax").GetDecimal());
+    }
+
     private sealed class TestHost : IDisposable
     {
         private readonly ApiFactory _parent;
@@ -447,6 +511,14 @@ public class AnimalWorkflowEndpointTests
             {
                 Id = id,
                 CommonName = request.CommonName,
+                LengthMmMin = request.LengthMmMin,
+                LengthMmMax = request.LengthMmMax,
+                HeightMmMin = request.HeightMmMin,
+                HeightMmMax = request.HeightMmMax,
+                WeightGramsMin = request.WeightGramsMin,
+                WeightGramsMax = request.WeightGramsMax,
+                LifespanMonthsMin = request.LifespanMonthsMin,
+                LifespanMonthsMax = request.LifespanMonthsMax,
                 Status = submitter == Role.Admin ? AnimalStatus.Approved : AnimalStatus.Pending,
                 SubmittedBy = submitter == Role.Admin ? "admin" : "tester"
             };
@@ -468,6 +540,14 @@ public class AnimalWorkflowEndpointTests
             }
 
             animal.CommonName = request.CommonName;
+            animal.LengthMmMin = request.LengthMmMin;
+            animal.LengthMmMax = request.LengthMmMax;
+            animal.HeightMmMin = request.HeightMmMin;
+            animal.HeightMmMax = request.HeightMmMax;
+            animal.WeightGramsMin = request.WeightGramsMin;
+            animal.WeightGramsMax = request.WeightGramsMax;
+            animal.LifespanMonthsMin = request.LifespanMonthsMin;
+            animal.LifespanMonthsMax = request.LifespanMonthsMax;
             UpdatedIds.Add(id);
             return Task.FromResult(new AnimalWriteResult(AnimalWriteStatus.Updated, animal));
         }

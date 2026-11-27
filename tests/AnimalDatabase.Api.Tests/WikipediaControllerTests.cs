@@ -43,7 +43,7 @@ public class WikipediaControllerTests
         var ok = Assert.IsType<OkObjectResult>(response.Result);
         var result = Assert.IsType<WikipediaImportResult>(ok.Value);
         Assert.Equal("Aye-aye", result.CommonName);
-        Assert.Equal<decimal?>(2.5m, result.WeightKgMin);
+        Assert.Equal<decimal?>(2500m, result.WeightGramsMin);
         Assert.DoesNotContain(handler.RequestedKeys, k => k.StartsWith("search/"));
     }
 
@@ -115,7 +115,7 @@ public class WikipediaControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(response.Result);
         var result = Assert.IsType<WikipediaImportResult>(ok.Value);
-        Assert.Equal<int?>(30, result.LifespanYearsMax);
+        Assert.Equal(360m, result.LifespanMonthsMax);
     }
 
     [Fact]
@@ -150,6 +150,6 @@ public class WikipediaControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(response.Result);
         var result = Assert.IsType<WikipediaImportResult>(ok.Value);
-        Assert.Equal<int?>(8, result.LifespanYearsMax);
+        Assert.Equal(96m, result.LifespanMonthsMax);
     }
 }

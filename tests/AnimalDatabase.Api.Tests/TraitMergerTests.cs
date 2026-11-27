@@ -8,79 +8,79 @@ public class TraitMergerTests
     [Fact]
     public void Fills_empty_fields_and_keeps_existing_ones()
     {
-        var result = new WikipediaImportResult { WeightKgMax = 1.5m };
-        var traits = new TraitData { WeightKgMax = 1.9m, LifespanYearsMax = 16 };
+        var result = new WikipediaImportResult { WeightGramsMax = 1500m };
+        var traits = new TraitData { WeightGramsMax = 1900m, LifespanMonthsMax = 192m };
         
         TraitMerger.FillMissing(result, traits, "AnAge");
         
-        Assert.Equal(1.5m, result.WeightKgMax);
-        Assert.Equal(16, result.LifespanYearsMax);
+        Assert.Equal(1500m, result.WeightGramsMax);
+        Assert.Equal(192m, result.LifespanMonthsMax);
     }
 
     [Fact]
     public void Does_not_fit_into_blank_fields()
     {
-        var result = new WikipediaImportResult { WeightKgMin = 1.3m };
-        var traits = new TraitData {WeightKgMax =  1.1m};
+        var result = new WikipediaImportResult { WeightGramsMin = 1300m };
+        var traits = new TraitData { WeightGramsMax = 1100m };
         
         TraitMerger.FillMissing(result, traits, "AnAge");
 
-        Assert.Equal(1.3m, result.WeightKgMin);
-        Assert.Null(result.WeightKgMax);
+        Assert.Equal(1300m, result.WeightGramsMin);
+        Assert.Null(result.WeightGramsMax);
     }
 
     [Fact]
     public void Fills_missing_max_when_min_exists()
     {
-        var result = new WikipediaImportResult { LifespanYearsMin = 10 };
-        var traits = new TraitData { LifespanYearsMax = 31 };
+        var result = new WikipediaImportResult { LifespanMonthsMin = 120m };
+        var traits = new TraitData { LifespanMonthsMax = 372m };
         
         TraitMerger.FillMissing(result, traits, "AnAge");
 
-        Assert.Equal(31, result.LifespanYearsMax);
+        Assert.Equal(372m, result.LifespanMonthsMax);
     }
 
     [Fact]
     public void Warns_when_length_ranges_do_not_overlap()
     {
-        var result = new WikipediaImportResult { SizeLengthCmMin = 20, SizeLengthCmMax = 30 };
-        var traits = new TraitData { SizeLengthCmMax = 50 };
+        var result = new WikipediaImportResult { LengthMmMin = 200, LengthMmMax = 300 };
+        var traits = new TraitData { LengthMmMax = 500 };
 
         TraitMerger.FillMissing(result, traits, "AnAge");
 
         var warning = Assert.Single(result.Warnings);
-        Assert.Equal("Length: AnAge says 50, kept 20 - 30", warning);
+        Assert.Equal("Length: AnAge says 500, kept 200 - 300", warning);
     }
 
     [Fact]
     public void Warns_with_weight_label_when_weights_disagree()
     {
-        var result = new WikipediaImportResult { WeightKgMin = 5, WeightKgMax = 8 };
-        var traits = new TraitData { WeightKgMin = 20, WeightKgMax = 25 };
+        var result = new WikipediaImportResult { WeightGramsMin = 5000, WeightGramsMax = 8000 };
+        var traits = new TraitData { WeightGramsMin = 20000, WeightGramsMax = 25000 };
 
         TraitMerger.FillMissing(result, traits, "FishBase/SeaLifeBase");
 
         var warning = Assert.Single(result.Warnings);
-        Assert.Equal("Weight: FishBase/SeaLifeBase says 20 - 25, kept 5 - 8", warning);
+        Assert.Equal("Weight: FishBase/SeaLifeBase says 20000 - 25000, kept 5000 - 8000", warning);
     }
 
     [Fact]
     public void Warns_with_lifespan_label_when_lifespans_disagree()
     {
-        var result = new WikipediaImportResult { LifespanYearsMax = 10 };
-        var traits = new TraitData { LifespanYearsMin = 30 };
+        var result = new WikipediaImportResult { LifespanMonthsMax = 120 };
+        var traits = new TraitData { LifespanMonthsMin = 360 };
 
         TraitMerger.FillMissing(result, traits, "EOL");
 
         var warning = Assert.Single(result.Warnings);
-        Assert.Equal("Lifespan: EOL says 30, kept 10", warning);
+        Assert.Equal("Lifespan: EOL says 360, kept 120", warning);
     }
 
     [Fact]
     public void Does_not_warn_when_ranges_overlap()
     {
-        var result = new WikipediaImportResult { SizeLengthCmMin = 20, SizeLengthCmMax = 30 };
-        var traits = new TraitData { SizeLengthCmMin = 25, SizeLengthCmMax = 40 };
+        var result = new WikipediaImportResult { LengthMmMin = 200, LengthMmMax = 300 };
+        var traits = new TraitData { LengthMmMin = 250, LengthMmMax = 400 };
 
         TraitMerger.FillMissing(result, traits, "AnAge");
 
@@ -90,8 +90,8 @@ public class TraitMergerTests
     [Fact]
     public void Does_not_warn_when_ranges_only_touch()
     {
-        var result = new WikipediaImportResult { WeightKgMin = 20, WeightKgMax = 30 };
-        var traits = new TraitData { WeightKgMin = 30, WeightKgMax = 40 };
+        var result = new WikipediaImportResult { WeightGramsMin = 20000, WeightGramsMax = 30000 };
+        var traits = new TraitData { WeightGramsMin = 30000, WeightGramsMax = 40000 };
 
         TraitMerger.FillMissing(result, traits, "AnAge");
 
@@ -101,8 +101,8 @@ public class TraitMergerTests
     [Fact]
     public void Does_not_warn_when_one_side_is_empty()
     {
-        var result = new WikipediaImportResult { LifespanYearsMax = 10 };
-        var traits = new TraitData { SizeLengthCmMax = 50 };
+        var result = new WikipediaImportResult { LifespanMonthsMax = 120 };
+        var traits = new TraitData { LengthMmMax = 500 };
 
         TraitMerger.FillMissing(result, traits, "AnAge");
 
@@ -112,8 +112,8 @@ public class TraitMergerTests
     [Fact]
     public void Warns_once_per_field_that_disagrees()
     {
-        var result = new WikipediaImportResult { SizeLengthCmMax = 20, WeightKgMax = 5, LifespanYearsMax = 10 };
-        var traits = new TraitData { SizeLengthCmMax = 50, WeightKgMax = 5, LifespanYearsMax = 40 };
+        var result = new WikipediaImportResult { LengthMmMax = 200, WeightGramsMax = 5000, LifespanMonthsMax = 120 };
+        var traits = new TraitData { LengthMmMax = 500, WeightGramsMax = 5000, LifespanMonthsMax = 480 };
 
         TraitMerger.FillMissing(result, traits, "AnAge");
 
@@ -123,35 +123,35 @@ public class TraitMergerTests
     }
 
     [Fact]
-    public void Rounds_values_so_they_fit_the_database_and_the_form()
+    public void Rounds_source_values_to_canonical_precision()
     {
         var result = new WikipediaImportResult();
-        var traits = new TraitData { SizeLengthCmMax = 12.34m, WeightKgMax = 1.2345m };
+        var traits = new TraitData { LengthMmMax = 12.345m, WeightGramsMax = 1.2345m };
 
         TraitMerger.FillMissing(result, traits, "FishBase/SeaLifeBase");
 
-        Assert.Equal(12.3m, result.SizeLengthCmMax);
-        Assert.Equal(1.23m, result.WeightKgMax);
+        Assert.Equal(12.35m, result.LengthMmMax);
+        Assert.Equal(1.235m, result.WeightGramsMax);
     }
 
     [Fact]
-    public void A_real_weight_under_five_grams_does_not_become_zero()
+    public void A_two_gram_weight_is_preserved()
     {
         var result = new WikipediaImportResult();
 
-        TraitMerger.FillMissing(result, new TraitData { WeightKgMax = 0.003m }, "AnAge");
+        TraitMerger.FillMissing(result, new TraitData { WeightGramsMax = 2m }, "AnAge");
 
-        Assert.Equal(0.01m, result.WeightKgMax);
+        Assert.Equal(2m, result.WeightGramsMax);
     }
 
     [Fact]
     public void Leaves_the_shared_source_data_unchanged()
     {
-        var traits = new TraitData { SizeLengthCmMax = 12.34m, WeightKgMax = 0.003m };
+        var traits = new TraitData { LengthMmMax = 12.34m, WeightGramsMax = 2m };
 
         TraitMerger.FillMissing(new WikipediaImportResult(), traits, "AnAge");
 
-        Assert.Equal(12.34m, traits.SizeLengthCmMax);
-        Assert.Equal(0.003m, traits.WeightKgMax);
+        Assert.Equal(12.34m, traits.LengthMmMax);
+        Assert.Equal(2m, traits.WeightGramsMax);
     }
 }

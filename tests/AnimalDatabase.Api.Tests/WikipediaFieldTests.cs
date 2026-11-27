@@ -33,8 +33,8 @@ public class WikipediaFieldTests
 
         Assert.NotNull(result);
         Assert.Equal("Fleischmann's glass frog", result.CommonName);
-        Assert.Equal<decimal?>(1.9m, result.SizeLengthCmMin);
-        Assert.Equal<decimal?>(3.2m, result.SizeLengthCmMax);
+        Assert.Equal<decimal?>(19m, result.LengthMmMin);
+        Assert.Equal<decimal?>(32m, result.LengthMmMax);
         Assert.Empty(handler.MissingKeys);
     }
 
@@ -62,10 +62,10 @@ public class WikipediaFieldTests
         Assert.Equal("least concern", result.IucnStatus);
         Assert.Equal("reptile", result.TaxonomicClass);
         Assert.Equal("Chelidae", result.Family);
-        Assert.Null(result.SizeLengthCmMin);
-        Assert.Equal<decimal?>(45m, result.SizeLengthCmMax);
-        Assert.Equal<decimal?>(17.2m, result.WeightKgMin);
-        Assert.Equal<decimal?>(17.2m, result.WeightKgMax);
+        Assert.Null(result.LengthMmMin);
+        Assert.Equal<decimal?>(450m, result.LengthMmMax);
+        Assert.Equal<decimal?>(17200m, result.WeightGramsMin);
+        Assert.Equal<decimal?>(17200m, result.WeightGramsMax);
         Assert.Equal("Amazon basin and river system of the eastern Guianas", result.RangeRegion);
         Assert.Empty(handler.MissingKeys);
     }
@@ -121,10 +121,10 @@ public class WikipediaFieldTests
         Assert.NotNull(result);
         Assert.Equal("Balaeniceps rex", result.ScientificName);
         Assert.Equal("bird", result.TaxonomicClass);
-        Assert.Equal<decimal?>(100m, result.SizeLengthCmMin);
-        Assert.Equal<decimal?>(140m, result.SizeLengthCmMax);
-        Assert.Equal<decimal?>(4m, result.WeightKgMin);
-        Assert.Equal<decimal?>(7m, result.WeightKgMax);
+        Assert.Equal<decimal?>(1000m, result.LengthMmMin);
+        Assert.Equal<decimal?>(1400m, result.LengthMmMax);
+        Assert.Equal<decimal?>(4000m, result.WeightGramsMin);
+        Assert.Equal<decimal?>(7000m, result.WeightGramsMax);
         Assert.Equal("Freshwater swamps", result.Habitat);
         Assert.Equal("Central tropical Africa", result.RangeRegion);
         Assert.Empty(handler.MissingKeys);
@@ -138,8 +138,8 @@ public class WikipediaFieldTests
         var result = await importer.ImportByNameAsync("aye-aye");
 
         Assert.NotNull(result);
-        Assert.Equal<decimal?>(36m, result.SizeLengthCmMin);
-        Assert.Equal<decimal?>(43m, result.SizeLengthCmMax);
+        Assert.Equal<decimal?>(360m, result.LengthMmMin);
+        Assert.Equal<decimal?>(430m, result.LengthMmMax);
         Assert.Equal("Rainforest or dry deciduous forest", result.Habitat);
         Assert.Equal("East coast of Madagascar", result.RangeRegion);
         Assert.Empty(handler.MissingKeys);
@@ -183,9 +183,9 @@ public class WikipediaFieldTests
         var result = await importer.ImportByNameAsync("octopus");
 
         Assert.NotNull(result);
-        Assert.Null(result.WeightKgMin);
-        Assert.Null(result.WeightKgMax);
-        Assert.Null(result.SizeLengthCmMax);
+        Assert.Null(result.WeightGramsMin);
+        Assert.Null(result.WeightGramsMax);
+        Assert.Null(result.LengthMmMax);
         Assert.Empty(handler.MissingKeys);
     }
 
@@ -224,7 +224,7 @@ public class WikipediaFieldTests
 
         Assert.NotNull(result);
         Assert.Equal("endangered", result.IucnStatus);
-        Assert.Equal<decimal?>(200m, result.WeightKgMin);
+        Assert.Equal<decimal?>(200000m, result.WeightGramsMin);
     }
 
     [Fact]
@@ -296,14 +296,14 @@ public class WikipediaFieldTests
 
         Assert.NotNull(result);
         Assert.Equal("Hapalochlaena", result.ScientificName);
-        Assert.Equal(2, result.LifespanYearsMin);
-        Assert.Equal(3, result.LifespanYearsMax);
+        Assert.Equal(24m, result.LifespanMonthsMin);
+        Assert.Equal(36m, result.LifespanMonthsMax);
         Assert.Equal("Tide pools and coral reefs", result.Habitat);
         Assert.Equal("Pacific and Indian Oceans, from Japan to Australia", result.RangeRegion);
-        Assert.Null(result.SizeLengthCmMin);
-        Assert.Null(result.SizeLengthCmMax);
-        Assert.Null(result.WeightKgMin);
-        Assert.Null(result.WeightKgMax);
+        Assert.Null(result.LengthMmMin);
+        Assert.Null(result.LengthMmMax);
+        Assert.Null(result.WeightGramsMin);
+        Assert.Null(result.WeightGramsMax);
         Assert.Empty(handler.MissingKeys);
     }
 }

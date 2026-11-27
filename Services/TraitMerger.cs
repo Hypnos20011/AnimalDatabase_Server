@@ -60,7 +60,6 @@ public static class TraitMerger
             weightMax
         );
 
-
         if (Disagrees(result.LifespanMonthsMin, result.LifespanMonthsMax, lifespanMin, lifespanMax))
         {
             result.Warnings.Add(
@@ -83,7 +82,6 @@ public static class TraitMerger
     {
         return value is null ? null : round(value.Value);
     }
-
 
     private static (decimal? min, decimal? max) MergePair(decimal? existingMin, decimal? existingMax,
         decimal? sourceMin, decimal? sourceMax)

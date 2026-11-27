@@ -66,6 +66,19 @@ public class WikipediaTextTests
         Assert.Equal(180m, result.Value.Max);
     }
 
+    [Theory]
+    [InlineData("The animal lives 6 weeks.", 14)]
+    [InlineData("The animal lives 3 months.", 30)]
+    public void Short_lifespans_are_read_in_months(string text, int monthTenths)
+    {
+        var result = Measure(text, Quantity.Lifespan);
+        var months = monthTenths / 10m;
+
+        Assert.NotNull(result);
+        Assert.Equal(months, result.Value.Min);
+        Assert.Equal(months, result.Value.Max);
+    }
+
     [Fact]
     public void A_two_gram_weight_survives_wikipedia_text_parsing()
     {

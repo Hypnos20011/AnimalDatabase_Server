@@ -293,15 +293,15 @@ shell" below).
 The API needs these scripts on the live database **before** the new code starts, or `/api/animals` fails. Run each one
 once, in this order. Check first with `SHOW COLUMNS FROM animals; SHOW TABLES;` and skip what is already there:
 
-| Script                                | What it does                                          |
-|---------------------------------------|-------------------------------------------------------|
-| `Database/habitat_type.sql`           | Adds `animals.habitat_type`                           |
-| `Database/animal_translations.sql`    | Adds the `animal_translations` table                  |
-| `Database/animal_translations_de.sql` | Loads the German texts                                |
-| `Database/animal_units.sql`           | Converts animal measurements to canonical base units  |
-| `Database/weight_range.sql`           | Ensures canonical weight columns use grams at 3 decimals |
-| `Database/source_url.sql`             | Adds `animals.source_url`                             |
-| `Database/animal_status.sql`           | Adds `animals.status`, `submitted_by`, `reviewed_at`, `review_note` |
+| Script                                | What it does                                                              |
+|---------------------------------------|---------------------------------------------------------------------------|
+| `Database/habitat_type.sql`           | Adds `animals.habitat_type`                                               |
+| `Database/animal_translations.sql`    | Adds the `animal_translations` table                                      |
+| `Database/animal_translations_de.sql` | Loads the German texts                                                    |
+| `Database/animal_units.sql`           | Converts animal measurements to canonical base units                     |
+| `Database/weight_range.sql`           | Raises the weight limit to 9,999,999.99 kg                               |
+| `Database/source_url.sql`             | Adds `animals.source_url`                                                 |
+| `Database/animal_status.sql`          | Adds `animals.status`, `submitted_by`, `reviewed_at`, `review_note`      |
 
 Run `Database/animal_units.sql` locally first. Back up the live database and obtain approval before applying it live and deploying this API version.
 

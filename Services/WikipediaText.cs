@@ -12,7 +12,7 @@ internal static class WikipediaText
     private const string Number = @"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?";
 
     private const string Unit =
-        @"(?:mm|millimet(?:re|er)s?|cm|centimet(?:re|er)s?|met(?:re|er)s?|m|inch(?:es)?|in(?=\s*(?:[.,;:)]|$))|ft|feet|foot|kg|kilo(?:gram|gramme)s?|g|grams?|grammes?|lbs?|pounds?|oz|ounces?|tonnes?|years?|yrs?)(?![\p{L}/²³])";
+        @"(?:mm|millimet(?:re|er)s?|cm|centimet(?:re|er)s?|met(?:re|er)s?|m|inch(?:es)?|in(?=\s*(?:[.,;:)]|$))|ft|feet|foot|kg|kilo(?:gram|gramme)s?|g|grams?|grammes?|lbs?|pounds?|oz|ounces?|tonnes?|years?|yrs?|months?|weeks?)(?![\p{L}/²³])";
 
     private const string NumberWord =
         @"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)";
@@ -84,7 +84,7 @@ internal static class WikipediaText
 
     private static readonly Regex LifespanExclusions =
         new(
-            @"\b(?:generations?|ago|million|since|until|every|per|old|population|populations|cycle|season|incubat\w*|gestat\w*|months?|days?|weeks?)\b",
+            @"\b(?:generations?|ago|million|since|until|every|per|old|population|populations|cycle|season|incubat\w*|gestat\w*|days?)\b",
             Ci);
 
     private static readonly Regex SizeSection =
@@ -474,7 +474,7 @@ internal static class WikipediaText
         {
             Quantity.Length => value is >= 0.5m and <= 40000m,
             Quantity.Weight => value is >= 0.5m and <= 9999999999.999m,
-            _ => value is >= 12m and <= 3000m
+            _ => value is >= 0.1m and <= 3000m
         };
     }
 
@@ -488,7 +488,8 @@ internal static class WikipediaText
             "kg" or "g" or "oz" or "lb" or "lbs" => Quantity.Weight,
             _ when unit.StartsWith("kilo") || unit.StartsWith("gram") || unit.StartsWith("pound") ||
                    unit.StartsWith("ounce") || unit.StartsWith("tonne") => Quantity.Weight,
-            _ when unit.StartsWith("year") || unit.StartsWith("yr") => Quantity.Lifespan,
+            _ when unit.StartsWith("year") || unit.StartsWith("yr") || unit.StartsWith("month") ||
+                   unit.StartsWith("week") => Quantity.Lifespan,
             _ => null
         };
     }
@@ -515,6 +516,8 @@ internal static class WikipediaText
             _ when unit.StartsWith("pound") => 453.59237m,
             _ when unit.StartsWith("ounce") => 28.349523125m,
             _ when unit.StartsWith("tonne") => 1000000m,
+            _ when unit.StartsWith("month") => 1m,
+            _ when unit.StartsWith("week") => 12m / 52m,
             _ when unit.StartsWith("year") || unit.StartsWith("yr") => 12m,
             _ => 1m
         };
